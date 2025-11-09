@@ -100,56 +100,57 @@ export default function MintPage() {
   if (isSuccess) {
     const explorerUrl = `${CONTRACTS[8453]?.explorer}/tx/${hash}`;
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
-        <nav className="border-b bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-black">
+        <nav className="border-b border-gray-800 bg-gray-900/80 backdrop-blur-lg sticky top-0 z-50">
+          <div className="mobile-container">
             <div className="flex justify-between items-center h-16">
-              <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                VibeBadge
+              <Link href="/" className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
+                🎫 VibeBadge
               </Link>
               {!isMiniApp && (
                 <button
                   onClick={() => connectors.length > 0 && connect({ connector: connectors[0] })}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                  className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition active:scale-95"
                 >
-                  {isConnected ? 'Connected' : 'Connect Wallet'}
+                  {isConnected ? '🟢 Connected' : 'Connect'}
                 </button>
               )}
             </div>
           </div>
         </nav>
 
-        <div className="max-w-2xl mx-auto px-4 py-20 text-center">
-          <div className="text-6xl mb-6">🎉</div>
-          <h1 className="text-4xl font-bold mb-4">Badge Minted Successfully!</h1>
+        <div className="mobile-container py-12 text-center animate-fade-in">
+          <div className="text-6xl sm:text-7xl mb-6">🎉</div>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-6 text-purple-400">Minting Successful!</h1>
           
           {mintedLevel && (
-            <div className="mb-6">
-              <div className={`inline-block px-6 py-3 rounded-full font-bold text-2xl ${
-                mintedLevel === 'DIAMOND' ? 'bg-gradient-to-r from-blue-400 to-cyan-400 text-white' :
-                mintedLevel === 'GOLD' ? 'bg-gradient-to-r from-yellow-400 to-orange-400 text-white' :
-                'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-800'
+            <div className="mb-8">
+              <div className={`inline-block px-8 py-4 rounded-2xl font-bold text-2xl sm:text-3xl shadow-2xl ${
+                mintedLevel === 'DIAMOND' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white animate-pulse' :
+                mintedLevel === 'GOLD' ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white animate-pulse' :
+                'bg-gradient-to-r from-gray-400 to-gray-500 text-white'
               }`}>
                 {mintedLevel === 'DIAMOND' ? '💎 DIAMOND' : mintedLevel === 'GOLD' ? '🥇 GOLD' : '🥈 SILVER'}
               </div>
-              <p className="mt-3 text-gray-600 dark:text-gray-300">
-                {mintedLevel === 'DIAMOND' ? 'Legendary! (10% chance)' : 
-                 mintedLevel === 'GOLD' ? 'Rare! (30% chance)' : 
+              <p className="mt-4 text-gray-400 text-sm">
+                {mintedLevel === 'DIAMOND' ? '🔥 Legendary! (10% chance)' : 
+                 mintedLevel === 'GOLD' ? '✨ Rare! (30% chance)' : 
                  'Common (60% chance)'}
               </p>
             </div>
           )}
           
-          <p className="text-gray-600 dark:text-gray-300 mb-8">
-            Your badge has been minted and is now in your wallet.
+          <p className="text-gray-400 mb-8 px-4">
+            Your badge is now in your wallet! 🎊
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          
+          <div className="flex flex-col gap-3 max-w-md mx-auto px-4">
             {mintedBadgeUrl && (
               <a
                 href={mintedBadgeUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition"
+                className="mobile-button-primary"
               >
                 🖼️ View Badge Image
               </a>
@@ -158,15 +159,12 @@ export default function MintPage() {
               href={explorerUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:shadow-xl transition"
+              className="mobile-button-primary"
             >
-              View on BaseScan
+              📜 View on BaseScan
             </a>
-            <Link
-              href="/badges"
-              className="px-6 py-3 border-2 border-purple-600 text-purple-600 rounded-lg font-semibold hover:bg-purple-50 dark:hover:bg-purple-900/20 transition"
-            >
-              View My Badges
+            <Link href="/badges" className="mobile-button-secondary">
+              🎫 View My Badges
             </Link>
             <button
               onClick={() => {
@@ -176,33 +174,51 @@ export default function MintPage() {
                 setUploadError(null);
                 window.location.reload();
               }}
-              className="px-6 py-3 border-2 border-gray-300 text-gray-600 rounded-lg font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+              className="mobile-button bg-gray-800 text-gray-300 border-2 border-gray-700 hover:bg-gray-700"
             >
-              Mint Another
+              ✨ Mint Another
             </button>
           </div>
         </div>
+
+        {/* Mobile Navigation Bar */}
+        <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-lg border-t border-gray-800 z-50">
+          <div className="grid grid-cols-3 gap-1 p-2">
+            <Link href="/mint" className="flex flex-col items-center py-3 text-purple-400 font-medium">
+              <span className="text-2xl mb-1">🎨</span>
+              <span className="text-xs">Mint</span>
+            </Link>
+            <Link href="/badges" className="flex flex-col items-center py-3 text-gray-400 hover:text-purple-400 transition">
+              <span className="text-2xl mb-1">🎫</span>
+              <span className="text-xs">Badges</span>
+            </Link>
+            <Link href="/stats" className="flex flex-col items-center py-3 text-gray-400 hover:text-purple-400 transition">
+              <span className="text-2xl mb-1">📊</span>
+              <span className="text-xs">Stats</span>
+            </Link>
+          </div>
+        </nav>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
-      <nav className="border-b bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-black pb-20 sm:pb-0">
+      <nav className="border-b border-gray-800 bg-gray-900/80 backdrop-blur-lg sticky top-0 z-50">
+        <div className="mobile-container">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-8">
-              <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                VibeBadge
+            <div className="flex items-center space-x-6">
+              <Link href="/" className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
+                🎫 VibeBadge
               </Link>
-              <div className="hidden md:flex space-x-6">
-                <Link href="/mint" className="text-purple-600 font-semibold">
+              <div className="hidden sm:flex space-x-4">
+                <Link href="/mint" className="text-purple-400 font-semibold text-sm">
                   Mint
                 </Link>
-                <Link href="/badges" className="text-gray-600 dark:text-gray-300 hover:text-purple-600 transition">
-                  My Badges
+                <Link href="/badges" className="text-gray-300 hover:text-purple-400 transition text-sm">
+                  Badges
                 </Link>
-                <Link href="/stats" className="text-gray-600 dark:text-gray-300 hover:text-purple-600 transition">
+                <Link href="/stats" className="text-gray-300 hover:text-purple-400 transition text-sm">
                   Stats
                 </Link>
               </div>
@@ -210,52 +226,52 @@ export default function MintPage() {
             {!isMiniApp && (
               <button
                 onClick={() => connectors.length > 0 && connect({ connector: connectors[0] })}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition active:scale-95"
               >
-                {isConnected ? 'Connected' : 'Connect Wallet'}
+                {isConnected ? '🟢 Connected' : 'Connect'}
               </button>
             )}
           </div>
         </div>
       </nav>
 
-      <div className="max-w-2xl mx-auto px-4 py-12">
-        <h1 className="text-4xl font-bold mb-8 text-center">Mint Your Badge</h1>
+      <div className="mobile-container py-8 sm:py-12">
+        <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-center text-purple-400">🎨 Mint Your Badge</h1>
 
         {!isConnected ? (
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-12 shadow-lg text-center">
+          <div className="mobile-card max-w-md mx-auto text-center p-8 sm:p-12 animate-fade-in">
             <div className="text-6xl mb-6">🔌</div>
-            <h2 className="text-2xl font-bold mb-4">Connect Your Wallet</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-8">
-              {isMiniApp ? 'Connecting to your wallet...' : 'Please connect your wallet to mint a badge.'}
+            <h2 className="text-2xl font-bold mb-4 text-purple-400">Connect Wallet</h2>
+            <p className="text-gray-400 mb-8 text-sm">
+              {isMiniApp ? 'Connecting to your wallet...' : 'Connect your wallet to mint a badge'}
             </p>
             {!isMiniApp && (
               <button
                 onClick={() => connectors.length > 0 && connect({ connector: connectors[0] })}
-                className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-semibold"
+                className="mobile-button-primary w-full"
               >
                 Connect Wallet
               </button>
             )}
           </div>
         ) : !isValidChain ? (
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-12 shadow-lg text-center">
+          <div className="mobile-card max-w-md mx-auto text-center p-8 sm:p-12 animate-fade-in">
             <div className="text-6xl mb-6">⚠️</div>
-            <h2 className="text-2xl font-bold mb-4">Wrong Network</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-8">
-              Please switch to Base Mainnet.
+            <h2 className="text-2xl font-bold mb-4 text-purple-400">Wrong Network</h2>
+            <p className="text-gray-400 mb-8 text-sm">
+              Please switch to Base Mainnet
             </p>
             <button
               onClick={() => switchChain?.({ chainId: 8453 })}
-              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:shadow-xl transition"
+              className="mobile-button-primary w-full"
             >
-              Switch to Base Mainnet
+              Switch to Base
             </button>
           </div>
         ) : (
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg">
+          <div className="mobile-card max-w-2xl mx-auto animate-fade-in">
             <div className="mb-6">
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-semibold text-purple-400 mb-3">
                 Event Name
               </label>
               <input
@@ -263,84 +279,84 @@ export default function MintPage() {
                 value={eventName}
                 onChange={(e) => setEventName(e.target.value)}
                 placeholder="e.g., Web3 Summit 2025"
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full px-4 py-3 border-2 border-gray-700 rounded-xl focus:ring-2 focus:ring-purple-600 focus:border-transparent bg-gray-800 text-white placeholder-gray-500 transition"
               />
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                Badge level will be randomly assigned: Diamond (10%), Gold (30%), Silver (60%)
+              <p className="mt-3 text-xs text-gray-500">
+                🎲 Badge rarity assigned randomly: Diamond (10%), Gold (30%), Silver (60%)
               </p>
             </div>
 
-            <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg p-6 mb-6 border-2 border-purple-200 dark:border-purple-800">
+            <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-xl p-6 mb-6 border-2 border-purple-700/50">
               <div className="text-center mb-4">
                 <div className="text-4xl mb-2">🎲</div>
-                <h3 className="font-bold text-lg">Random Badge Rarity</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                  Your badge will be automatically generated with a random rarity level!
+                <h3 className="font-bold text-lg text-purple-400">Random Rarity</h3>
+                <p className="text-sm text-gray-400 mt-2">
+                  Your badge will be auto-generated with random rarity!
                 </p>
               </div>
               <div className="grid grid-cols-3 gap-3 mt-4">
-                <div className="bg-white dark:bg-gray-700 rounded-lg p-3 text-center">
+                <div className="bg-gray-800 rounded-lg p-3 text-center border border-gray-700">
                   <div className="text-2xl mb-1">💎</div>
-                  <div className="font-bold text-blue-400">Diamond</div>
-                  <div className="text-xs text-gray-500">10% chance</div>
+                  <div className="font-bold text-blue-400 text-sm">Diamond</div>
+                  <div className="text-xs text-gray-500">10%</div>
                 </div>
-                <div className="bg-white dark:bg-gray-700 rounded-lg p-3 text-center">
+                <div className="bg-gray-800 rounded-lg p-3 text-center border border-gray-700">
                   <div className="text-2xl mb-1">🥇</div>
-                  <div className="font-bold text-yellow-500">Gold</div>
-                  <div className="text-xs text-gray-500">30% chance</div>
+                  <div className="font-bold text-yellow-500 text-sm">Gold</div>
+                  <div className="text-xs text-gray-500">30%</div>
                 </div>
-                <div className="bg-white dark:bg-gray-700 rounded-lg p-3 text-center">
+                <div className="bg-gray-800 rounded-lg p-3 text-center border border-gray-700">
                   <div className="text-2xl mb-1">🥈</div>
-                  <div className="font-bold text-gray-400">Silver</div>
-                  <div className="text-xs text-gray-500">60% chance</div>
+                  <div className="font-bold text-gray-400 text-sm">Silver</div>
+                  <div className="text-xs text-gray-500">60%</div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-6 mb-6">
-              <h3 className="font-semibold mb-4">Cost Breakdown</h3>
+            <div className="bg-gray-800 rounded-xl p-6 mb-6 border border-gray-700">
+              <h3 className="font-semibold mb-4 text-purple-400">💰 Cost Breakdown</h3>
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Base Price:</span>
-                  <span className="font-mono">{mintPrice ? formatEther(mintPrice) : '0.001'} ETH</span>
+                <div className="flex justify-between text-gray-400">
+                  <span>Base Price:</span>
+                  <span className="font-mono text-white">{mintPrice ? formatEther(mintPrice) : '0.001'} ETH</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">System Fee (3%):</span>
-                  <span className="font-mono">
+                <div className="flex justify-between text-gray-400">
+                  <span>System Fee (3%):</span>
+                  <span className="font-mono text-white">
                     {mintPrice ? formatEther(BigInt(mintPrice) * 3n / 100n) : '0.00003'} ETH
                   </span>
                 </div>
-                <div className="border-t border-gray-300 dark:border-gray-600 pt-2 mt-2 flex justify-between font-bold">
-                  <span>Total Cost:</span>
-                  <span className="font-mono text-purple-600">{totalCost ? formatEther(totalCost) : '0.00103'} ETH</span>
+                <div className="border-t border-gray-700 pt-3 mt-3 flex justify-between font-bold">
+                  <span className="text-purple-400">Total Cost:</span>
+                  <span className="font-mono text-purple-400 text-lg">{totalCost ? formatEther(totalCost) : '0.00103'} ETH</span>
                 </div>
               </div>
-              <p className="mt-4 text-xs text-gray-500 dark:text-gray-400">
-                Badge will be auto-generated and uploaded to IPFS via Pinata
+              <p className="mt-4 text-xs text-gray-500">
+                📌 Auto-generated and uploaded to IPFS via Pinata
               </p>
             </div>
 
             {uploadError && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
-                <p className="text-red-600 dark:text-red-400 text-sm">
-                  Error: {uploadError}
+              <div className="bg-red-900/20 border-2 border-red-800 rounded-xl p-4 mb-6 animate-fade-in">
+                <p className="text-red-400 text-sm">
+                  ❌ {uploadError}
                 </p>
               </div>
             )}
 
             {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
-                <p className="text-red-600 dark:text-red-400 text-sm">
-                  Error: {error.message}
+              <div className="bg-red-900/20 border-2 border-red-800 rounded-xl p-4 mb-6 animate-fade-in">
+                <p className="text-red-400 text-sm">
+                  ❌ {error.message}
                 </p>
               </div>
             )}
 
             {(isConfirming || isUploading) && (
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6 text-center">
-                <div className="animate-spin inline-block w-6 h-6 border-4 border-blue-600 border-t-transparent rounded-full mb-2"></div>
-                <p className="text-blue-600 dark:text-blue-400 text-sm">
-                  {isUploading ? 'Uploading badge to IPFS...' : 'Confirming transaction...'}
+              <div className="bg-blue-900/20 border-2 border-blue-800 rounded-xl p-6 mb-6 text-center animate-fade-in">
+                <div className="animate-spin inline-block w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full mb-3"></div>
+                <p className="text-blue-400 text-sm font-medium">
+                  {isUploading ? '📤 Uploading to IPFS...' : '⏳ Confirming transaction...'}
                 </p>
               </div>
             )}
@@ -348,17 +364,35 @@ export default function MintPage() {
             <button
               onClick={handleMint}
               disabled={!eventName.trim() || isPending || isConfirming || isUploading}
-              className="w-full px-6 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold text-lg hover:shadow-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="mobile-button-primary w-full text-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isUploading ? 'Uploading...' : isPending || isConfirming ? 'Minting...' : 'Generate & Mint Badge'}
+              {isUploading ? '📤 Uploading...' : isPending || isConfirming ? '⏳ Minting...' : '✨ Generate & Mint Badge'}
             </button>
 
-            <p className="mt-4 text-xs text-center text-gray-500 dark:text-gray-400">
-              Your badge will be randomly generated and uploaded to IPFS
+            <p className="mt-4 text-xs text-center text-gray-500">
+              🎨 Your badge will be randomly generated and uploaded to IPFS
             </p>
           </div>
         )}
       </div>
+
+      {/* Mobile Navigation Bar */}
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-lg border-t border-gray-800 z-50">
+        <div className="grid grid-cols-3 gap-1 p-2">
+          <Link href="/mint" className="flex flex-col items-center py-3 text-purple-400 font-medium">
+            <span className="text-2xl mb-1">🎨</span>
+            <span className="text-xs">Mint</span>
+          </Link>
+          <Link href="/badges" className="flex flex-col items-center py-3 text-gray-400 hover:text-purple-400 transition">
+            <span className="text-2xl mb-1">🎫</span>
+            <span className="text-xs">Badges</span>
+          </Link>
+          <Link href="/stats" className="flex flex-col items-center py-3 text-gray-400 hover:text-purple-400 transition">
+            <span className="text-2xl mb-1">📊</span>
+            <span className="text-xs">Stats</span>
+          </Link>
+        </div>
+      </nav>
     </div>
   );
 }

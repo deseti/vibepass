@@ -39,22 +39,22 @@ export default function BadgesPage() {
   }, [badgeCount]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
-      <nav className="border-b bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-black pb-20 sm:pb-0">
+      <nav className="border-b border-gray-800 bg-gray-900/80 backdrop-blur-lg sticky top-0 z-50">
+        <div className="mobile-container">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-8">
-              <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                VibeBadge
+            <div className="flex items-center space-x-6">
+              <Link href="/" className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
+                🎫 VibeBadge
               </Link>
-              <div className="hidden md:flex space-x-6">
-                <Link href="/mint" className="text-gray-600 dark:text-gray-300 hover:text-purple-600 transition">
+              <div className="hidden sm:flex space-x-4">
+                <Link href="/mint" className="text-gray-300 hover:text-purple-400 transition text-sm">
                   Mint
                 </Link>
-                <Link href="/badges" className="text-purple-600 font-semibold">
-                  My Badges
+                <Link href="/badges" className="text-purple-400 font-semibold text-sm">
+                  Badges
                 </Link>
-                <Link href="/stats" className="text-gray-600 dark:text-gray-300 hover:text-purple-600 transition">
+                <Link href="/stats" className="text-gray-300 hover:text-purple-400 transition text-sm">
                   Stats
                 </Link>
               </div>
@@ -62,111 +62,127 @@ export default function BadgesPage() {
             {!isMiniApp && (
               <button
                 onClick={() => connectors.length > 0 && connect({ connector: connectors[0] })}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition active:scale-95"
               >
-                {isConnected ? 'Connected' : 'Connect Wallet'}
+                {isConnected ? '🟢 Connected' : 'Connect'}
               </button>
             )}
           </div>
         </div>
       </nav>
 
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <h1 className="text-4xl font-bold mb-8">My Badges</h1>
+      <div className="mobile-container py-8 sm:py-12">
+        <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-purple-400">🎫 My Badges</h1>
 
         {!isConnected ? (
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-12 shadow-lg text-center">
+          <div className="mobile-card max-w-md mx-auto text-center p-8 sm:p-12 animate-fade-in">
             <div className="text-6xl mb-6">🔌</div>
-            <h2 className="text-2xl font-bold mb-4">Connect Your Wallet</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-8">
-              {isMiniApp ? 'Connecting to your wallet...' : 'Please connect your wallet to view your badges.'}
+            <h2 className="text-2xl font-bold mb-4 text-purple-400">Connect Wallet</h2>
+            <p className="text-gray-400 mb-8 text-sm">
+              {isMiniApp ? 'Connecting to your wallet...' : 'Connect your wallet to view your badges'}
             </p>
             {!isMiniApp && (
               <button
                 onClick={() => connectors.length > 0 && connect({ connector: connectors[0] })}
-                className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-semibold"
+                className="mobile-button-primary w-full"
               >
                 Connect Wallet
               </button>
             )}
           </div>
         ) : loading ? (
-          <div className="text-center py-20">
+          <div className="text-center py-20 animate-fade-in">
             <div className="animate-spin inline-block w-12 h-12 border-4 border-purple-600 border-t-transparent rounded-full"></div>
-            <p className="mt-4 text-gray-600 dark:text-gray-400">Loading badges...</p>
+            <p className="mt-4 text-gray-400">Loading badges...</p>
           </div>
         ) : badgeCount === 0 ? (
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-12 shadow-lg text-center">
+          <div className="mobile-card max-w-md mx-auto text-center p-8 sm:p-12 animate-fade-in">
             <div className="text-6xl mb-6">📭</div>
-            <h2 className="text-2xl font-bold mb-4">No Badges Yet</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-8">
-              You haven't minted any badges yet. Mint your first one now!
+            <h2 className="text-2xl font-bold mb-4 text-purple-400">No Badges Yet</h2>
+            <p className="text-gray-400 mb-8 text-sm">
+              You haven't minted any badges yet. Create your first one now!
             </p>
-            <Link
-              href="/mint"
-              className="inline-block px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:shadow-xl transition"
-            >
-              Mint Your First Badge
+            <Link href="/mint" className="mobile-button-primary inline-block">
+              🎨 Mint Your First Badge
             </Link>
           </div>
         ) : (
-          <>
-            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg mb-8">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="animate-fade-in">
+            <div className="mobile-card mb-8">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Wallet Address</div>
-                  <code className="text-sm bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                  <div className="text-xs text-gray-500 mb-2">Wallet Address</div>
+                  <code className="text-xs sm:text-sm bg-gray-800 px-2 py-1 rounded block overflow-x-auto text-purple-400">
                     {address?.slice(0, 10)}...{address?.slice(-8)}
                   </code>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Total Badges</div>
-                  <div className="text-2xl font-bold text-purple-600">{badgeCount}</div>
+                  <div className="text-xs text-gray-500 mb-2">Total Badges</div>
+                  <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
+                    {badgeCount}
+                  </div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Network</div>
-                  <div className="text-lg font-semibold">Base Mainnet</div>
+                  <div className="text-xs text-gray-500 mb-2">Network</div>
+                  <div className="text-base sm:text-lg font-semibold text-gray-300">Base Mainnet</div>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {Array.from({ length: badgeCount }).map((_, index) => (
-                <div key={index} className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition">
-                  <div className="h-48 bg-gradient-to-br from-purple-400 to-blue-400 flex items-center justify-center">
-                    <div className="text-6xl">🎫</div>
+                <div 
+                  key={index} 
+                  className="mobile-card hover:border-purple-700 transition-all duration-300 overflow-hidden group"
+                >
+                  <div className="h-40 sm:h-48 bg-gradient-to-br from-purple-600 via-purple-700 to-blue-700 flex items-center justify-center relative overflow-hidden">
+                    <div className="text-6xl sm:text-7xl group-hover:scale-110 transition-transform duration-300">🎫</div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                   </div>
-                  <div className="p-6">
-                    <h3 className="font-bold text-xl mb-2">Badge #{index + 1}</h3>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                      This badge represents your participation in an event.
+                  <div className="p-4 sm:p-6">
+                    <h3 className="font-bold text-lg sm:text-xl mb-2 text-purple-400">Badge #{index + 1}</h3>
+                    <p className="text-gray-400 text-xs sm:text-sm mb-4">
+                      Event participation NFT on Base L2
                     </p>
-                    <div className="flex gap-2">
-                      <a
-                        href={`${explorerUrl}/token/${contractAddress}?a=${index + 1}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 text-center px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-700 transition"
-                      >
-                        View on BaseScan
-                      </a>
-                    </div>
+                    <a
+                      href={`${explorerUrl}/token/${contractAddress}?a=${index + 1}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block text-center px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-700 transition active:scale-95"
+                    >
+                      📜 View on BaseScan
+                    </a>
                   </div>
                 </div>
               ))}
             </div>
 
             <div className="mt-8 text-center">
-              <Link
-                href="/mint"
-                className="inline-block px-6 py-3 border-2 border-purple-600 text-purple-600 rounded-lg font-semibold hover:bg-purple-50 dark:hover:bg-purple-900/20 transition"
-              >
-                Mint Another Badge
+              <Link href="/mint" className="mobile-button-secondary inline-block">
+                ✨ Mint Another Badge
               </Link>
             </div>
-          </>
+          </div>
         )}
       </div>
+
+      {/* Mobile Navigation Bar */}
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-lg border-t border-gray-800 z-50">
+        <div className="grid grid-cols-3 gap-1 p-2">
+          <Link href="/mint" className="flex flex-col items-center py-3 text-gray-400 hover:text-purple-400 transition">
+            <span className="text-2xl mb-1">🎨</span>
+            <span className="text-xs">Mint</span>
+          </Link>
+          <Link href="/badges" className="flex flex-col items-center py-3 text-purple-400 font-medium">
+            <span className="text-2xl mb-1">🎫</span>
+            <span className="text-xs">Badges</span>
+          </Link>
+          <Link href="/stats" className="flex flex-col items-center py-3 text-gray-400 hover:text-purple-400 transition">
+            <span className="text-2xl mb-1">📊</span>
+            <span className="text-xs">Stats</span>
+          </Link>
+        </div>
+      </nav>
     </div>
   );
 }
