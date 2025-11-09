@@ -12,23 +12,13 @@
     "name": "VibeBadge",
     "homeUrl": "https://vibepass.vercel.app",
     "iconUrl": "https://vibepass.vercel.app/icon.png",
-    "splashImageUrl": "https://vibepass.vercel.app/logo-splash.png",
+    "splashImageUrl": "https://vibepass.vercel.app/icon.png",
     "splashBackgroundColor": "#7C3AED",
-    "webhookUrl": "https://vibepass.vercel.app/api/webhook",
     "subtitle": "Event Badge NFTs",
     "description": "Mint unique event attendance badges with random rarity levels. Diamond, Gold, or Silver - let luck decide your legendary status!",
-    "screenshotUrls": [
-      "https://vibepass.vercel.app/screenshot1.png",
-      "https://vibepass.vercel.app/screenshot2.png",
-      "https://vibepass.vercel.app/screenshot3.png"
-    ],
     "primaryCategory": "art-creativity",
     "tags": ["nft", "badges", "events", "collectibles", "base"],
-    "heroImageUrl": "https://vibepass.vercel.app/og-image.png",
     "tagline": "Mint Your Event Legend",
-    "ogTitle": "VibeBadge - Event Badge NFTs",
-    "ogDescription": "Mint unique event badges with random rarity. Diamond, Gold, or Silver - your luck awaits!",
-    "ogImageUrl": "https://vibepass.vercel.app/og-image.png",
     "noindex": false
   }
 }
