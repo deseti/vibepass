@@ -153,7 +153,8 @@ export default function MintPage() {
             <button
               onClick={() => {
                 setEventName('');
-                setBadgeLevel('SILVER');
+                setMintedBadgeUrl('');
+                setMintedLevel(null);
                 setUploadError(null);
                 window.location.reload();
               }}
@@ -321,7 +322,7 @@ export default function MintPage() {
             </button>
 
             <p className="mt-4 text-xs text-center text-gray-500 dark:text-gray-400">
-              Your badge will be automatically generated with {badgeLevel} design and uploaded to IPFS
+              Your badge will be randomly generated and uploaded to IPFS
             </p>
           </div>
         )}
