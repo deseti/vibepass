@@ -66,9 +66,12 @@ export default function MintPage() {
       console.log('🔌 Mini App detected, auto-connecting Farcaster wallet...');
       const farcasterConnector = connectors.find(c => c.name === 'Farcaster');
       if (farcasterConnector) {
-        connect({ connector: farcasterConnector })
-          .then(() => console.log('✅ Farcaster wallet connected'))
-          .catch(err => console.error('❌ Auto-connect failed:', err));
+        try {
+          connect({ connector: farcasterConnector });
+          console.log('✅ Farcaster wallet connecting...');
+        } catch (err) {
+          console.error('❌ Auto-connect failed:', err);
+        }
       }
     }
   }, [isMiniApp, miniAppLoading, isConnected, connectors, connect]);
