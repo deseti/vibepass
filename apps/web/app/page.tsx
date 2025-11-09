@@ -1,13 +1,15 @@
 'use client';
 
 import Link from 'next/link';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount, useReadContract, useChainId } from 'wagmi';
+import { useAccount, useReadContract, useChainId, useConnect } from 'wagmi';
 import { CONTRACTS, VIBEBADGE_ABI } from '@/lib/contracts';
 import { formatEther } from 'viem';
+import { useMiniAppContext } from '@/hooks/useMiniAppContext';
 
 export default function HomePage() {
   const { isConnected } = useAccount();
+  const { connect, connectors } = useConnect();
+  const { isMiniApp } = useMiniAppContext();
   const chainId = useChainId();
   const contractAddress = CONTRACTS[chainId as keyof typeof CONTRACTS]?.address;
 
@@ -53,7 +55,14 @@ export default function HomePage() {
                 </Link>
               </div>
             </div>
-            <ConnectButton />
+            {!isMiniApp && (
+              <button
+                onClick={() => connectors.length > 0 && connect({ connector: connectors[0] })}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+              >
+                {isConnected ? 'Connected' : 'Connect Wallet'}
+              </button>
+            )}
           </div>
         </div>
       </nav>

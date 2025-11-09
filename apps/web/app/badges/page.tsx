@@ -2,15 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount, useReadContract, useChainId } from 'wagmi';
+import { useAccount, useReadContract, useChainId, useConnect } from 'wagmi';
 import { CONTRACTS, VIBEBADGE_ABI } from '@/lib/contracts';
+import { useMiniAppContext } from '@/hooks/useMiniAppContext';
 
 export default function BadgesPage() {
   const [tokenURIs, setTokenURIs] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   
   const { address, isConnected } = useAccount();
+  const { connect, connectors } = useConnect();
+  const { isMiniApp } = useMiniAppContext();
   const chainId = useChainId();
   const contractAddress = CONTRACTS[8453]?.address;
   const explorerUrl = CONTRACTS[8453]?.explorer;
@@ -57,7 +59,14 @@ export default function BadgesPage() {
                 </Link>
               </div>
             </div>
-            <ConnectButton />
+            {!isMiniApp && (
+              <button
+                onClick={() => connectors.length > 0 && connect({ connector: connectors[0] })}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+              >
+                {isConnected ? 'Connected' : 'Connect Wallet'}
+              </button>
+            )}
           </div>
         </div>
       </nav>
@@ -70,9 +79,16 @@ export default function BadgesPage() {
             <div className="text-6xl mb-6">🔌</div>
             <h2 className="text-2xl font-bold mb-4">Connect Your Wallet</h2>
             <p className="text-gray-600 dark:text-gray-400 mb-8">
-              Please connect your wallet to view your badges.
+              {isMiniApp ? 'Connecting to your wallet...' : 'Please connect your wallet to view your badges.'}
             </p>
-            <ConnectButton />
+            {!isMiniApp && (
+              <button
+                onClick={() => connectors.length > 0 && connect({ connector: connectors[0] })}
+                className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-semibold"
+              >
+                Connect Wallet
+              </button>
+            )}
           </div>
         ) : loading ? (
           <div className="text-center py-20">
