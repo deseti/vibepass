@@ -10,9 +10,9 @@
   "miniapp": {
     "version": "1",
     "name": "VibeBadge",
-    "homeUrl": "https://vibepass.vercel.app",
-    "iconUrl": "https://vibepass.vercel.app/icon.png",
-    "splashImageUrl": "https://vibepass.vercel.app/icon.png",
+    "homeUrl": "https://app.vibepas.xyz",
+    "iconUrl": "https://app.vibepas.xyz/icon.png",
+    "splashImageUrl": "https://app.vibepas.xyz/icon.png",
     "splashBackgroundColor": "#7C3AED",
     "subtitle": "Event Badge NFTs",
     "description": "Mint unique event attendance badges with random rarity levels. Diamond, Gold, or Silver - let luck decide your legendary status!",

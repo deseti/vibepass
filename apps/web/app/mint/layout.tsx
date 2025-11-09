@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     description: 'Create unique event badges with random rarity - Diamond, Gold, or Silver!',
     images: [
       {
-        url: 'https://vibepass.vercel.app/icon.png',
+        url: 'https://app.vibepas.xyz/icon.png',
         width: 512,
         height: 512,
         alt: 'VibeBadge'
@@ -18,14 +18,14 @@ export const metadata: Metadata = {
   other: {
     'fc:miniapp': JSON.stringify({
       version: "1",
-      imageUrl: "https://vibepass.vercel.app/icon.png",
+      imageUrl: "https://app.vibepas.xyz/icon.png",
       button: {
         title: "🎫 Mint Badge",
         action: {
           type: "launch_miniapp",
           name: "VibeBadge",
-          url: "https://vibepass.vercel.app/mint",
-          splashImageUrl: "https://vibepass.vercel.app/icon.png",
+          url: "https://app.vibepas.xyz/mint",
+          splashImageUrl: "https://app.vibepas.xyz/icon.png",
           splashBackgroundColor: "#7C3AED"
         }
       }
