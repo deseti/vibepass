@@ -8,6 +8,11 @@ const Web3Provider = dynamic(
   { ssr: false }
 );
 
+const MiniAppInit = dynamic(
+  () => import('@/components/MiniAppInit').then((mod) => mod.MiniAppInit),
+  { ssr: false }
+);
+
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
@@ -29,6 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
+        <MiniAppInit />
         <Web3Provider>
           {children}
         </Web3Provider>

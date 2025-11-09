@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="90" fill="url(#gradient)"/>
+  
+  <!-- Gradient definition -->
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7C3AED;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3B82F6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Badge icon -->
+  <g transform="translate(100, 100)">
+    <!-- V shape like a flame -->
+    <path d="M 0,-40 L 20,-10 L 15,20 L 0,40 L -15,20 L -20,-10 Z" 
+          fill="white" 
+          stroke="white" 
+          stroke-width="2"/>
+    
+    <!-- Inner detail -->
+    <path d="M 0,-30 L 12,-15 L 8,10 L 0,25 L -8,10 L -12,-15 Z" 
+          fill="url(#innerGradient)" 
+          opacity="0.8"/>
+    
+    <linearGradient id="innerGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
+    </linearGradient>
+  </g>
+  
+  <!-- Text below -->
+  <text x="100" y="175" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="white" text-anchor="middle">
+    VibeBadge
+  </text>
+</svg>

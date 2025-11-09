@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract, useChainId, useSwitchChain } from 'wagmi';
+import { useAccount, useConnect, useReadContract, useWriteContract, useWaitForTransactionReceipt, useChainId, useSwitchChain } from 'wagmi';
 import { CONTRACTS, VIBEBADGE_ABI, DEV_ADDRESS } from '@/lib/contracts';
 import { formatEther } from 'viem';
 import { generateBadgeSVG, generateBadgeMetadata, type BadgeLevel } from '@/lib/badgeGenerator';
 import { uploadSVGToPinata, uploadToPinata } from '@/lib/pinata';
+import { useMiniAppContext } from '@/hooks/useMiniAppContext';
 
 export default function MintPage() {
   const [eventName, setEventName] = useState('');
@@ -17,6 +17,8 @@ export default function MintPage() {
   const [mintedLevel, setMintedLevel] = useState<BadgeLevel | null>(null);
   
   const { address, isConnected } = useAccount();
+  const { connect, connectors } = useConnect();
+  const { isMiniApp } = useMiniAppContext();
   const chainId = useChainId();
   const { chains, switchChain } = useSwitchChain();
   
@@ -40,6 +42,15 @@ export default function MintPage() {
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({
     hash,
   });
+
+  // Auto-connect di mini app environment
+  useEffect(() => {
+    if (isMiniApp && !isConnected && connectors.length > 0) {
+      // Auto-connect ke Farcaster connector
+      const farcasterConnector = connectors[0];
+      connect({ connector: farcasterConnector });
+    }
+  }, [isMiniApp, isConnected, connectors, connect]);
 
   const handleMint = async () => {
     if (!address || !contractAddress || !totalCost || !eventName.trim()) return;
@@ -96,7 +107,14 @@ export default function MintPage() {
               <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                 VibeBadge
               </Link>
-              <ConnectButton />
+              {!isMiniApp && (
+                <button
+                  onClick={() => connectors.length > 0 && connect({ connector: connectors[0] })}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+                >
+                  {isConnected ? 'Connected' : 'Connect Wallet'}
+                </button>
+              )}
             </div>
           </div>
         </nav>
@@ -189,7 +207,14 @@ export default function MintPage() {
                 </Link>
               </div>
             </div>
-            <ConnectButton />
+            {!isMiniApp && (
+              <button
+                onClick={() => connectors.length > 0 && connect({ connector: connectors[0] })}
+                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+              >
+                {isConnected ? 'Connected' : 'Connect Wallet'}
+              </button>
+            )}
           </div>
         </div>
       </nav>
@@ -202,9 +227,16 @@ export default function MintPage() {
             <div className="text-6xl mb-6">🔌</div>
             <h2 className="text-2xl font-bold mb-4">Connect Your Wallet</h2>
             <p className="text-gray-600 dark:text-gray-400 mb-8">
-              Please connect your wallet to mint a badge.
+              {isMiniApp ? 'Connecting to your wallet...' : 'Please connect your wallet to mint a badge.'}
             </p>
-            <ConnectButton />
+            {!isMiniApp && (
+              <button
+                onClick={() => connectors.length > 0 && connect({ connector: connectors[0] })}
+                className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-semibold"
+              >
+                Connect Wallet
+              </button>
+            )}
           </div>
         ) : !isValidChain ? (
           <div className="bg-white dark:bg-gray-800 rounded-xl p-12 shadow-lg text-center">
