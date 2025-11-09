@@ -18,12 +18,25 @@ export default function MintPage() {
   
   const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
-  const { isMiniApp } = useMiniAppContext();
+  const { isMiniApp, isLoading: miniAppLoading, context } = useMiniAppContext();
   const chainId = useChainId();
   const { chains, switchChain } = useSwitchChain();
   
   const contractAddress = CONTRACTS[8453]?.address;
   const isValidChain = chainId === 8453;
+
+  // Debug info
+  useEffect(() => {
+    console.log('🔍 Mint Page State:', {
+      isMiniApp,
+      miniAppLoading,
+      isConnected,
+      address,
+      connectorCount: connectors.length,
+      connectorNames: connectors.map(c => c.name),
+      fid: context?.user?.fid,
+    });
+  }, [isMiniApp, miniAppLoading, isConnected, address, connectors, context]);
 
   const { data: mintPrice } = useReadContract({
     address: contractAddress,
@@ -43,14 +56,22 @@ export default function MintPage() {
     hash,
   });
 
-  // Auto-connect di mini app environment
+  // Auto-connect di mini app environment - tunggu sampai detection selesai
   useEffect(() => {
-    if (isMiniApp && !isConnected && connectors.length > 0) {
-      // Auto-connect ke Farcaster connector
-      const farcasterConnector = connectors[0];
-      connect({ connector: farcasterConnector });
+    // Jangan auto-connect kalau masih loading detection atau sudah connected
+    if (miniAppLoading || isConnected) return;
+
+    // Hanya auto-connect kalau benar-benar di mini app environment
+    if (isMiniApp && connectors.length > 0) {
+      console.log('🔌 Mini App detected, auto-connecting Farcaster wallet...');
+      const farcasterConnector = connectors.find(c => c.name === 'Farcaster');
+      if (farcasterConnector) {
+        connect({ connector: farcasterConnector })
+          .then(() => console.log('✅ Farcaster wallet connected'))
+          .catch(err => console.error('❌ Auto-connect failed:', err));
+      }
     }
-  }, [isMiniApp, isConnected, connectors, connect]);
+  }, [isMiniApp, miniAppLoading, isConnected, connectors, connect]);
 
   const handleMint = async () => {
     if (!address || !contractAddress || !totalCost || !eventName.trim()) return;

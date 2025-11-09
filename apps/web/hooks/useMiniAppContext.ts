@@ -17,6 +17,30 @@ export function useMiniAppContext() {
         if (isInMiniApp) {
           const miniAppContext = await sdk.context;
           setContext(miniAppContext);
+
+          // Simpan FID saat ini untuk detect user change
+          const currentFid = miniAppContext?.user?.fid;
+          if (currentFid) {
+            const storedFid = localStorage.getItem('farcaster_fid');
+            
+            // Kalau FID berbeda, clear state dan force disconnect
+            if (storedFid && storedFid !== currentFid.toString()) {
+              console.log('🔄 User changed, clearing old session...');
+              
+              // Clear localStorage wagmi state
+              Object.keys(localStorage).forEach(key => {
+                if (key.startsWith('wagmi.') || key.startsWith('wc@2')) {
+                  localStorage.removeItem(key);
+                }
+              });
+              
+              // Reload page untuk fresh state
+              window.location.reload();
+            }
+            
+            // Update stored FID
+            localStorage.setItem('farcaster_fid', currentFid.toString());
+          }
         }
       } catch (error) {
         console.error('Error checking mini app context:', error);
