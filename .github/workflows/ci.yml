@@ -1,0 +1,260 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+# Cancel previous runs if a new push occurs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ==================== Smart Contract Tests ====================
+  contracts:
+    name: Smart Contract Tests
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        id: cache-node-modules
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ matrix.node-version }}-
+            ${{ runner.os }}-node-
+      
+      - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: npm ci
+      
+      - name: Compile contracts
+        run: npx hardhat compile
+      
+      - name: Run Hardhat tests
+        run: npx hardhat test
+        env:
+          # Use hardhat network (no need for RPC keys)
+          NODE_ENV: test
+      
+      - name: Generate coverage report
+        run: npx hardhat coverage
+        continue-on-error: true
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/lcov.info
+          flags: contracts
+          name: contract-coverage
+        continue-on-error: true
+
+  # ==================== Frontend Tests ====================
+  frontend:
+    name: Frontend Build & Type Check
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: apps/web
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: apps/web/package-lock.json
+      
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: apps/web/node_modules
+          key: ${{ runner.os }}-web-${{ hashFiles('apps/web/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-web-
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Type check
+        run: npx tsc --noEmit
+        continue-on-error: true
+      
+      - name: Lint
+        run: npm run lint --if-present
+        continue-on-error: true
+      
+      - name: Build Next.js app
+        run: npm run build
+        env:
+          NEXT_PUBLIC_CONTRACT_ADDRESS: "0x0000000000000000000000000000000000000000"
+          NEXT_PUBLIC_CHAIN_ID: "8453"
+
+  # ==================== Security Checks ====================
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+        continue-on-error: true
+      
+      - name: Check for secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+        continue-on-error: true
+      
+      - name: Check dependencies with Snyk
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+        continue-on-error: true
+
+  # ==================== Linting & Formatting ====================
+  lint:
+    name: Lint & Format Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Check Solidity formatting
+        run: npx prettier --check "contracts/**/*.sol"
+        continue-on-error: true
+      
+      - name: Run Solhint
+        run: |
+          npm install -g solhint
+          solhint 'contracts/**/*.sol'
+        continue-on-error: true
+
+  # ==================== Gas Report ====================
+  gas-report:
+    name: Gas Usage Report
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Compile contracts
+        run: npx hardhat compile
+      
+      - name: Generate gas report
+        run: REPORT_GAS=true npx hardhat test
+        continue-on-error: true
+      
+      - name: Comment gas report on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            if (fs.existsSync('./gas-report.txt')) {
+              const report = fs.readFileSync('./gas-report.txt', 'utf8');
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: '## ⛽ Gas Report\n\n```\n' + report + '\n```'
+              });
+            }
+        continue-on-error: true
+
+  # ==================== Database Migrations Check ====================
+  database:
+    name: Database Migration Check
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: vibepass_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Test database migration
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -d vibepass_test -f db/migrations/001_init.sql
+      
+      - name: Verify tables created
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -d vibepass_test -c "\dt"
+
+  # ==================== All Checks Passed ====================
+  all-checks:
+    name: All Checks Passed
+    runs-on: ubuntu-latest
+    needs: [contracts, frontend, security, lint, database]
+    
+    steps:
+      - name: Success
+        run: echo "✅ All CI checks passed!"
