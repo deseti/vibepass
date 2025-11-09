@@ -1,13 +1,10 @@
-import { base, baseSepolia } from 'wagmi/chains';
+import { base } from 'wagmi/chains';
 
 export const CONTRACTS = {
   [base.id]: {
     address: '0xaCF8105456d400b128Ca6fC739A20c7178d50767' as `0x${string}`,
     explorer: 'https://basescan.org',
-  },
-  [baseSepolia.id]: {
-    address: '0xf0FCf8630fdA34593F3a00a41BD553Bd610c2644' as `0x${string}`,
-    explorer: 'https://sepolia.basescan.org',
+    name: 'Base Mainnet',
   },
 };
 

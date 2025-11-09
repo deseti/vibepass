@@ -8,9 +8,9 @@ import { formatEther } from 'viem';
 
 export default function StatsPage() {
   const chainId = useChainId();
-  const contractAddress = CONTRACTS[chainId as keyof typeof CONTRACTS]?.address;
-  const explorerUrl = CONTRACTS[chainId as keyof typeof CONTRACTS]?.explorer;
-  const networkName = chainId === 8453 ? 'Base Mainnet' : chainId === 84532 ? 'Base Sepolia Testnet' : 'Unknown Network';
+  const contractAddress = CONTRACTS[8453]?.address;
+  const explorerUrl = CONTRACTS[8453]?.explorer;
+  const networkName = 'Base Mainnet';
 
   const { data: mintPrice } = useReadContract({
     address: contractAddress,
@@ -168,37 +168,27 @@ export default function StatsPage() {
           </div>
         </div>
 
-        {/* Contract Addresses for Both Networks */}
+        {/* Rarity Distribution */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
-          <h2 className="text-2xl font-bold mb-6">All Contract Addresses</h2>
-          <div className="space-y-4">
-            <div>
-              <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">Base Mainnet</div>
-              <code className="text-sm bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded block overflow-x-auto">
-                {CONTRACTS[8453].address}
-              </code>
-              <a
-                href={`${CONTRACTS[8453].explorer}/address/${CONTRACTS[8453].address}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-purple-600 hover:underline mt-1 inline-block"
-              >
-                View on BaseScan →
-              </a>
+          <h2 className="text-2xl font-bold mb-6">Badge Rarity Distribution</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-6 text-center border-2 border-blue-200 dark:border-blue-700">
+              <div className="text-4xl mb-2">💎</div>
+              <div className="font-bold text-xl text-blue-600 dark:text-blue-400">Diamond</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400 mt-2">Legendary Rarity</div>
+              <div className="text-2xl font-bold mt-2">10%</div>
             </div>
-            <div>
-              <div className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-2">Base Sepolia Testnet</div>
-              <code className="text-sm bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded block overflow-x-auto">
-                {CONTRACTS[84532].address}
-              </code>
-              <a
-                href={`${CONTRACTS[84532].explorer}/address/${CONTRACTS[84532].address}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-purple-600 hover:underline mt-1 inline-block"
-              >
-                View on BaseScan →
-              </a>
+            <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 rounded-lg p-6 text-center border-2 border-yellow-200 dark:border-yellow-700">
+              <div className="text-4xl mb-2">🥇</div>
+              <div className="font-bold text-xl text-yellow-600 dark:text-yellow-400">Gold</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400 mt-2">Rare</div>
+              <div className="text-2xl font-bold mt-2">30%</div>
+            </div>
+            <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/20 dark:to-gray-600/20 rounded-lg p-6 text-center border-2 border-gray-200 dark:border-gray-600">
+              <div className="text-4xl mb-2">🥈</div>
+              <div className="font-bold text-xl text-gray-600 dark:text-gray-400">Silver</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400 mt-2">Common</div>
+              <div className="text-2xl font-bold mt-2">60%</div>
             </div>
           </div>
         </div>

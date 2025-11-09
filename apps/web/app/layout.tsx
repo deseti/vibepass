@@ -13,6 +13,10 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'VibeBadge - Event NFT Badges',
   description: 'Mint and collect event attendance NFT badges on Base',
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
 };
 
 export default function RootLayout({

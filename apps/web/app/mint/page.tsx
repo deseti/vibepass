@@ -19,8 +19,8 @@ export default function MintPage() {
   const chainId = useChainId();
   const { chains, switchChain } = useSwitchChain();
   
-  const contractAddress = CONTRACTS[chainId as keyof typeof CONTRACTS]?.address;
-  const isValidChain = chainId === 8453 || chainId === 84532;
+  const contractAddress = CONTRACTS[8453]?.address;
+  const isValidChain = chainId === 8453;
 
   const { data: mintPrice } = useReadContract({
     address: contractAddress,
@@ -80,7 +80,7 @@ export default function MintPage() {
   };
 
   if (isSuccess) {
-    const explorerUrl = `${CONTRACTS[chainId as keyof typeof CONTRACTS]?.explorer}/tx/${hash}`;
+    const explorerUrl = `${CONTRACTS[8453]?.explorer}/tx/${hash}`;
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
         <nav className="border-b bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
@@ -175,22 +175,14 @@ export default function MintPage() {
             <div className="text-6xl mb-6">⚠️</div>
             <h2 className="text-2xl font-bold mb-4">Wrong Network</h2>
             <p className="text-gray-600 dark:text-gray-400 mb-8">
-              Please switch to Base Mainnet or Base Sepolia Testnet.
+              Please switch to Base Mainnet.
             </p>
-            <div className="flex gap-4 justify-center">
-              <button
-                onClick={() => switchChain?.({ chainId: 8453 })}
-                className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:shadow-xl transition"
-              >
-                Switch to Mainnet
-              </button>
-              <button
-                onClick={() => switchChain?.({ chainId: 84532 })}
-                className="px-6 py-3 border-2 border-purple-600 text-purple-600 rounded-lg font-semibold hover:bg-purple-50 dark:hover:bg-purple-900/20 transition"
-              >
-                Switch to Testnet
-              </button>
-            </div>
+            <button
+              onClick={() => switchChain?.({ chainId: 8453 })}
+              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold hover:shadow-xl transition"
+            >
+              Switch to Base Mainnet
+            </button>
           </div>
         ) : (
           <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg">

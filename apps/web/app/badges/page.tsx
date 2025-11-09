@@ -12,8 +12,8 @@ export default function BadgesPage() {
   
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
-  const contractAddress = CONTRACTS[chainId as keyof typeof CONTRACTS]?.address;
-  const explorerUrl = CONTRACTS[chainId as keyof typeof CONTRACTS]?.explorer;
+  const contractAddress = CONTRACTS[8453]?.address;
+  const explorerUrl = CONTRACTS[8453]?.explorer;
 
   const { data: balance } = useReadContract({
     address: contractAddress,
@@ -109,9 +109,7 @@ export default function BadgesPage() {
                 </div>
                 <div>
                   <div className="text-sm text-gray-500 dark:text-gray-400 mb-1">Network</div>
-                  <div className="text-lg font-semibold">
-                    {chainId === 8453 ? 'Base Mainnet' : chainId === 84532 ? 'Base Sepolia' : 'Unknown'}
-                  </div>
+                  <div className="text-lg font-semibold">Base Mainnet</div>
                 </div>
               </div>
             </div>

@@ -148,18 +148,20 @@ export default function HomePage() {
         {/* Contract Info */}
         <div className="mt-20 bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg">
           <h2 className="text-2xl font-bold mb-6 text-center">Contract Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-            <div>
-              <div className="font-semibold text-gray-500 dark:text-gray-400 mb-2">Mainnet Contract</div>
-              <code className="bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded block overflow-x-auto">
-                {CONTRACTS[8453].address}
-              </code>
-            </div>
-            <div>
-              <div className="font-semibold text-gray-500 dark:text-gray-400 mb-2">Testnet Contract</div>
-              <code className="bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded block overflow-x-auto">
-                {CONTRACTS[84532].address}
-              </code>
+          <div className="text-center">
+            <div className="font-semibold text-gray-500 dark:text-gray-400 mb-2">Base Mainnet Contract</div>
+            <code className="bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded inline-block overflow-x-auto">
+              {CONTRACTS[8453].address}
+            </code>
+            <div className="mt-4">
+              <a
+                href={`${CONTRACTS[8453].explorer}/address/${CONTRACTS[8453].address}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-purple-600 hover:underline"
+              >
+                View on BaseScan →
+              </a>
             </div>
           </div>
         </div>

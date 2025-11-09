@@ -1,4 +1,4 @@
-// Badge generator utility
+// Badge generator utility with random rarity
 export type BadgeLevel = 'GOLD' | 'SILVER' | 'DIAMOND';
 
 interface BadgeColors {
@@ -8,6 +8,11 @@ interface BadgeColors {
 }
 
 const BADGE_COLORS: Record<BadgeLevel, BadgeColors> = {
+  DIAMOND: {
+    primary: '#B9F2FF',
+    secondary: '#00D4FF',
+    glow: 'rgba(185, 242, 255, 0.8)',
+  },
   GOLD: {
     primary: '#FFD700',
     secondary: '#FFA500',
@@ -18,12 +23,23 @@ const BADGE_COLORS: Record<BadgeLevel, BadgeColors> = {
     secondary: '#A8A8A8',
     glow: 'rgba(192, 192, 192, 0.6)',
   },
-  DIAMOND: {
-    primary: '#B9F2FF',
-    secondary: '#00D4FF',
-    glow: 'rgba(185, 242, 255, 0.8)',
-  },
 };
+
+// Random badge level with probability:
+// Diamond: 10% (rarest)
+// Gold: 30%
+// Silver: 60% (most common)
+export function getRandomBadgeLevel(): BadgeLevel {
+  const random = Math.random() * 100;
+  
+  if (random < 10) {
+    return 'DIAMOND'; // 10% chance
+  } else if (random < 40) {
+    return 'GOLD'; // 30% chance
+  } else {
+    return 'SILVER'; // 60% chance
+  }
+}
 
 export function generateBadgeSVG(
   eventName: string,
@@ -89,9 +105,12 @@ export function generateBadgeMetadata(
   imageUrl: string,
   description?: string
 ) {
+  const rarityText = level === 'DIAMOND' ? 'Legendary (10%)' : level === 'GOLD' ? 'Rare (30%)' : 'Common (60%)';
+  const rarityScore = level === 'DIAMOND' ? 100 : level === 'GOLD' ? 70 : 40;
+  
   return {
     name: `${eventName} - ${level} Badge`,
-    description: description || `${level} tier VibeBadge for ${eventName} event attendance`,
+    description: description || `${level} tier VibeBadge for ${eventName}. Rarity: ${rarityText}`,
     image: imageUrl,
     attributes: [
       {
@@ -101,6 +120,10 @@ export function generateBadgeMetadata(
       {
         trait_type: 'Event',
         value: eventName,
+      },
+      {
+        trait_type: 'Rarity Score',
+        value: rarityScore,
       },
       {
         trait_type: 'Mint Date',
