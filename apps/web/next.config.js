@@ -8,25 +8,21 @@ const nextConfig = {
     NEXT_PUBLIC_CONTRACT_ADDRESS: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS,
     NEXT_PUBLIC_CHAIN_ID: process.env.NEXT_PUBLIC_CHAIN_ID || '8453',
   },
-  webpack: (config) => {
+  webpack: (config, { isServer }) => {
     config.resolve.fallback = { 
+      ...config.resolve.fallback,
       fs: false, 
       net: false, 
       tls: false,
-      crypto: false,
     };
-    config.externals.push(
-      'pino-pretty', 
-      'lokijs', 
-      'encoding',
-      '@react-native-async-storage/async-storage'
-    );
     
-    // Ignore warnings for optional dependencies
-    config.ignoreWarnings = [
-      { module: /@metamask\/sdk/ },
-      { module: /@react-native-async-storage/ },
-    ];
+    // Replace the problematic module with an empty module
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@react-native-async-storage/async-storage': false,
+    };
+    
+    config.externals.push('pino-pretty', 'lokijs', 'encoding');
     
     return config;
   },
