@@ -1,0 +1,41 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="256" fill="url(#bgGradient)"/>
+  
+  <!-- V Shape -->
+  <g filter="url(#glow)">
+    <!-- Left flame -->
+    <path d="M 200 180 Q 180 220 190 260 Q 195 280 210 300 L 240 350 L 256 320 L 220 240 Z" 
+          fill="#FF6B6B" opacity="0.9"/>
+    
+    <!-- Right flame -->
+    <path d="M 312 180 Q 332 220 322 260 Q 317 280 302 300 L 272 350 L 256 320 L 292 240 Z" 
+          fill="#FFA500" opacity="0.9"/>
+    
+    <!-- Center V -->
+    <path d="M 256 150 L 220 280 L 240 290 L 256 250 L 272 290 L 292 280 Z" 
+          fill="#FFD700" opacity="1"/>
+    
+    <!-- Inner glow -->
+    <path d="M 256 170 L 230 260 L 245 268 L 256 230 L 267 268 L 282 260 Z" 
+          fill="#FFFFFF" opacity="0.8"/>
+  </g>
+  
+  <!-- VibeBadge Text -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="48" font-weight="bold" 
+        fill="#FFFFFF" text-anchor="middle" opacity="0.95">VibeBadge</text>
+</svg>

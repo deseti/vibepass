@@ -11,9 +11,10 @@ import { uploadSVGToPinata, uploadToPinata } from '@/lib/pinata';
 
 export default function MintPage() {
   const [eventName, setEventName] = useState('');
-  const [badgeLevel, setBadgeLevel] = useState<BadgeLevel>('SILVER');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [mintedBadgeUrl, setMintedBadgeUrl] = useState<string>('');
+  const [mintedLevel, setMintedLevel] = useState<BadgeLevel | null>(null);
   
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
@@ -47,24 +48,30 @@ export default function MintPage() {
     setUploadError(null);
 
     try {
-      // 1. Generate SVG badge
-      const svg = generateBadgeSVG(eventName, badgeLevel);
+      // 1. Get random badge level
+      const { getRandomBadgeLevel } = await import('@/lib/badgeGenerator');
+      const randomLevel = getRandomBadgeLevel();
+      setMintedLevel(randomLevel);
       
-      // 2. Upload SVG to Pinata
-      const imageIpfsUrl = await uploadSVGToPinata(svg, `${eventName}-${badgeLevel}-badge.svg`);
+      // 2. Generate SVG badge
+      const svg = generateBadgeSVG(eventName, randomLevel);
       
-      // 3. Generate metadata
+      // 3. Upload SVG to Pinata
+      const imageIpfsUrl = await uploadSVGToPinata(svg, `${eventName}-${randomLevel}-badge.svg`);
+      setMintedBadgeUrl(imageIpfsUrl);
+      
+      // 4. Generate metadata
       const metadata = generateBadgeMetadata(
         eventName,
-        badgeLevel,
+        randomLevel,
         imageIpfsUrl,
-        `${badgeLevel} tier badge for ${eventName} event`
+        `${randomLevel} tier badge for ${eventName} event`
       );
       
-      // 4. Upload metadata to Pinata
-      const metadataIpfsUrl = await uploadToPinata(metadata, `${eventName}-${badgeLevel}-metadata.json`);
+      // 5. Upload metadata to Pinata
+      const metadataIpfsUrl = await uploadToPinata(metadata, `${eventName}-${randomLevel}-metadata.json`);
       
-      // 5. Mint NFT with metadata URI
+      // 6. Mint NFT with metadata URI
       writeContract({
         address: contractAddress,
         abi: VIBEBADGE_ABI,
@@ -97,10 +104,38 @@ export default function MintPage() {
         <div className="max-w-2xl mx-auto px-4 py-20 text-center">
           <div className="text-6xl mb-6">🎉</div>
           <h1 className="text-4xl font-bold mb-4">Badge Minted Successfully!</h1>
+          
+          {mintedLevel && (
+            <div className="mb-6">
+              <div className={`inline-block px-6 py-3 rounded-full font-bold text-2xl ${
+                mintedLevel === 'DIAMOND' ? 'bg-gradient-to-r from-blue-400 to-cyan-400 text-white' :
+                mintedLevel === 'GOLD' ? 'bg-gradient-to-r from-yellow-400 to-orange-400 text-white' :
+                'bg-gradient-to-r from-gray-300 to-gray-400 text-gray-800'
+              }`}>
+                {mintedLevel === 'DIAMOND' ? '💎 DIAMOND' : mintedLevel === 'GOLD' ? '🥇 GOLD' : '🥈 SILVER'}
+              </div>
+              <p className="mt-3 text-gray-600 dark:text-gray-300">
+                {mintedLevel === 'DIAMOND' ? 'Legendary! (10% chance)' : 
+                 mintedLevel === 'GOLD' ? 'Rare! (30% chance)' : 
+                 'Common (60% chance)'}
+              </p>
+            </div>
+          )}
+          
           <p className="text-gray-600 dark:text-gray-300 mb-8">
             Your badge has been minted and is now in your wallet.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            {mintedBadgeUrl && (
+              <a
+                href={mintedBadgeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition"
+              >
+                🖼️ View Badge Image
+              </a>
+            )}
             <a
               href={explorerUrl}
               target="_blank"
@@ -197,51 +232,35 @@ export default function MintPage() {
                 placeholder="e.g., Web3 Summit 2025"
                 className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               />
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                Badge level will be randomly assigned: Diamond (10%), Gold (30%), Silver (60%)
+              </p>
             </div>
 
-            <div className="mb-6">
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                Badge Level
-              </label>
-              <div className="grid grid-cols-3 gap-4">
-                <button
-                  onClick={() => setBadgeLevel('SILVER')}
-                  className={`p-4 rounded-lg border-2 transition ${
-                    badgeLevel === 'SILVER'
-                      ? 'border-gray-400 bg-gray-50 dark:bg-gray-700'
-                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="text-3xl mb-2">🥈</div>
-                  <div className="font-bold text-gray-700 dark:text-gray-300">SILVER</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Standard</div>
-                </button>
-                
-                <button
-                  onClick={() => setBadgeLevel('GOLD')}
-                  className={`p-4 rounded-lg border-2 transition ${
-                    badgeLevel === 'GOLD'
-                      ? 'border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20'
-                      : 'border-gray-200 dark:border-gray-600 hover:border-yellow-300'
-                  }`}
-                >
-                  <div className="text-3xl mb-2">🥇</div>
-                  <div className="font-bold text-yellow-600 dark:text-yellow-400">GOLD</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Premium</div>
-                </button>
-                
-                <button
-                  onClick={() => setBadgeLevel('DIAMOND')}
-                  className={`p-4 rounded-lg border-2 transition ${
-                    badgeLevel === 'DIAMOND'
-                      ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20'
-                      : 'border-gray-200 dark:border-gray-600 hover:border-blue-300'
-                  }`}
-                >
-                  <div className="text-3xl mb-2">💎</div>
-                  <div className="font-bold text-blue-600 dark:text-blue-400">DIAMOND</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">Elite</div>
-                </button>
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-lg p-6 mb-6 border-2 border-purple-200 dark:border-purple-800">
+              <div className="text-center mb-4">
+                <div className="text-4xl mb-2">🎲</div>
+                <h3 className="font-bold text-lg">Random Badge Rarity</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                  Your badge will be automatically generated with a random rarity level!
+                </p>
+              </div>
+              <div className="grid grid-cols-3 gap-3 mt-4">
+                <div className="bg-white dark:bg-gray-700 rounded-lg p-3 text-center">
+                  <div className="text-2xl mb-1">💎</div>
+                  <div className="font-bold text-blue-400">Diamond</div>
+                  <div className="text-xs text-gray-500">10% chance</div>
+                </div>
+                <div className="bg-white dark:bg-gray-700 rounded-lg p-3 text-center">
+                  <div className="text-2xl mb-1">🥇</div>
+                  <div className="font-bold text-yellow-500">Gold</div>
+                  <div className="text-xs text-gray-500">30% chance</div>
+                </div>
+                <div className="bg-white dark:bg-gray-700 rounded-lg p-3 text-center">
+                  <div className="text-2xl mb-1">🥈</div>
+                  <div className="font-bold text-gray-400">Silver</div>
+                  <div className="text-xs text-gray-500">60% chance</div>
+                </div>
               </div>
             </div>
 

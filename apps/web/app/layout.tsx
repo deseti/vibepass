@@ -14,8 +14,10 @@ export const metadata: Metadata = {
   title: 'VibeBadge - Event NFT Badges',
   description: 'Mint and collect event attendance NFT badges on Base',
   icons: {
-    icon: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/icon.png', type: 'image/png', sizes: '512x512' },
+    ],
   },
 };
 
