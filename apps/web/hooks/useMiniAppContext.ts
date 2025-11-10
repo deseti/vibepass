@@ -12,10 +12,13 @@ export function useMiniAppContext() {
   useEffect(() => {
     const checkMiniApp = async () => {
       try {
+        console.log('🔍 Checking if running in Mini App...');
         const isInMiniApp = await sdk.isInMiniApp();
+        console.log('📱 Is Mini App:', isInMiniApp);
         setIsMiniApp(isInMiniApp);
 
         if (isInMiniApp) {
+          console.log('📡 Fetching Mini App context...');
           const miniAppContext = await sdk.context;
           setContext(miniAppContext);
           
@@ -27,8 +30,10 @@ export function useMiniAppContext() {
             fid: miniAppContext?.user?.fid,
             username: miniAppContext?.user?.username,
             displayName: miniAppContext?.user?.displayName,
+            pfpUrl: miniAppContext?.user?.pfpUrl,
             platformType: miniAppContext?.client?.platformType,
             clientFid: miniAppContext?.client?.clientFid,
+            hasEthProvider: !!provider
           });
 
           // Simpan FID saat ini untuk detect user change
@@ -53,13 +58,19 @@ export function useMiniAppContext() {
             
             // Update stored FID
             localStorage.setItem('farcaster_fid', currentFid.toString());
+            console.log('✅ FID saved:', currentFid);
+          } else {
+            console.warn('⚠️ No FID found in context');
           }
+        } else {
+          console.log('🌐 Running in regular web browser (not Mini App)');
         }
       } catch (error) {
-        console.error('Error checking mini app context:', error);
+        console.error('❌ Error checking mini app context:', error);
         setIsMiniApp(false);
       } finally {
         setIsLoading(false);
+        console.log('✅ Mini App context check complete');
       }
     };
 

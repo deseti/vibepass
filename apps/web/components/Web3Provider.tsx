@@ -27,7 +27,7 @@ const config = createConfig({
 // Auto-connect component untuk Farcaster Mini App
 function AutoConnectFarcaster() {
   const { isMiniApp, isLoading, context } = useMiniAppContext();
-  const { address, isConnected } = useAccount();
+  const { address, isConnected, connector } = useAccount();
   const { connect, connectors } = useConnect();
   const [hasAttempted, setHasAttempted] = useState(false);
 
@@ -37,51 +37,55 @@ function AutoConnectFarcaster() {
       isLoading,
       isConnected,
       hasAddress: !!address,
-      address: address?.substring(0, 10) + '...',
+      address: address?.substring(0, 10) + '...' || 'null',
       hasAttempted,
       connectorsCount: connectors.length,
-      contextLoaded: !!context
+      contextLoaded: !!context,
+      currentConnector: connector?.name || 'none'
     });
 
-    // Jika di Mini App, tidak loading, context sudah ada, belum connected, dan belum pernah attempt
+    // Berdasarkan dokumentasi: "If a user already has a connected wallet the connector will automatically connect to it"
+    // Jadi kita hanya perlu trigger connect jika belum connected
     if (isMiniApp && !isLoading && context && !isConnected && !hasAttempted) {
-      console.log('🔌 Auto-connecting Farcaster wallet...');
+      console.log('🔌 Attempting to connect to Farcaster wallet...');
       
-      // Tunggu sebentar untuk memastikan SDK benar-benar siap
-      setTimeout(() => {
-        // Cari Farcaster connector
-        const farcasterConnector = connectors.find(
-          (c) => c.id === 'farcaster' || c.name.toLowerCase().includes('farcaster')
-        );
+      // Cari Farcaster connector
+      const farcasterConnector = connectors.find(
+        (c) => c.id === 'farcaster' || c.name.toLowerCase().includes('farcaster')
+      );
 
-        console.log('🔍 Available connectors:', connectors.map(c => ({ id: c.id, name: c.name })));
+      console.log('🔍 Available connectors:', connectors.map(c => ({ id: c.id, name: c.name })));
 
-        if (farcasterConnector) {
-          try {
-            console.log('✅ Found Farcaster connector, attempting connect...');
-            connect({ connector: farcasterConnector });
-            setHasAttempted(true);
-          } catch (error) {
-            console.error('❌ Auto-connect failed:', error);
-            setHasAttempted(true);
-          }
-        } else {
-          console.warn('⚠️ Farcaster connector not found in connectors list');
+      if (farcasterConnector) {
+        console.log('✅ Found Farcaster connector:', farcasterConnector.name);
+        
+        // Trigger connect - akan otomatis connect ke wallet yang sudah connected
+        try {
+          connect({ connector: farcasterConnector });
+          setHasAttempted(true);
+          console.log('✅ Connect triggered');
+        } catch (error) {
+          console.error('❌ Connect failed:', error);
           setHasAttempted(true);
         }
-      }, 500); // Delay 500ms untuk memastikan SDK siap
+      } else {
+        console.warn('⚠️ Farcaster connector not found');
+        console.log('Available connectors:', connectors);
+        setHasAttempted(true);
+      }
     }
 
     // Log jika sudah connected
     if (isConnected && address) {
-      console.log('✅ Wallet Connected:', {
+      console.log('✅ Wallet Connected Successfully:', {
         address: address.substring(0, 10) + '...',
+        connector: connector?.name,
         isMiniApp
       });
     }
-  }, [isMiniApp, isLoading, isConnected, address, hasAttempted, connect, connectors, context]);
+  }, [isMiniApp, isLoading, isConnected, address, hasAttempted, connect, connectors, context, connector]);
 
-  return null; // This component doesn't render anything
+  return null;
 }
 
 export function Web3Provider({ children }: { children: React.ReactNode }) {
@@ -100,7 +104,7 @@ export function Web3Provider({ children }: { children: React.ReactNode }) {
   }));
 
   return (
-    <WagmiProvider config={config} reconnectOnMount={false}>
+    <WagmiProvider config={config} reconnectOnMount={true}>
       <QueryClientProvider client={queryClient}>
         <AutoConnectFarcaster />
         {children}

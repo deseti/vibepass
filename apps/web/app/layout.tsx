@@ -13,6 +13,11 @@ const MiniAppInit = dynamic(
   { ssr: false }
 );
 
+const DebugInfo = dynamic(
+  () => import('@/components/DebugInfo').then((mod) => mod.DebugInfo),
+  { ssr: false }
+);
+
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
@@ -65,6 +70,7 @@ export default function RootLayout({
         <MiniAppInit />
         <Web3Provider>
           {children}
+          <DebugInfo />
         </Web3Provider>
       </body>
     </html>
