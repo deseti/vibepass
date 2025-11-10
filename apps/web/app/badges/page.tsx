@@ -146,7 +146,7 @@ export default function BadgesPage() {
                     </p>
                     <div className="flex gap-2">
                       <a
-                        href={`https://gateway.pinata.cloud/ipfs/badge-placeholder`}
+                        href={`https://harlequin-adjacent-gull-459.mypinata.cloud/ipfs/QmRVFHV49zpmRhev1YWAjCKjSiF7HYA6K9Nc3kCHnKiKvj`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex-1 text-center px-3 py-2 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-700 transition active:scale-95"
