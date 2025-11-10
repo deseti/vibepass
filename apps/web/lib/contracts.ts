@@ -2,7 +2,7 @@ import { base } from 'wagmi/chains';
 
 export const CONTRACTS = {
   [base.id]: {
-    address: '0xaCF8105456d400b128Ca6fC739A20c7178d50767' as `0x${string}`,
+    address: '0x3a45387ae84F1fc0D71c0B22155102D6824D5940' as `0x${string}`,
     explorer: 'https://basescan.org',
     name: 'Base Mainnet',
   },
