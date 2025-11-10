@@ -60,6 +60,11 @@ contract VibeBadge is ERC721, Ownable {
     // Mapping from token ID to token URI
     mapping(uint256 => string) private _tokenURIs;
 
+    // Daily check-in tracking
+    mapping(address => uint256) public lastCheckIn; // address => timestamp of last check-in
+    mapping(address => uint256) public checkInStreak; // address => consecutive days streak
+    mapping(address => uint256) public totalCheckIns; // address => total check-ins count
+
     // Developer address for receiving fees
     address payable public immutable devAddress;
 
@@ -74,6 +79,8 @@ contract VibeBadge is ERC721, Ownable {
     event BadgeMinted(address indexed to, uint256 indexed tokenId, string tokenURI);
     event DevFeeCollected(address indexed from, address indexed devAddress, uint256 amount);
     event MintPriceUpdated(uint256 oldPrice, uint256 newPrice);
+    event CheckedIn(address indexed user, uint256 timestamp, uint256 streak);
+    event FundsWithdrawn(address indexed dev, uint256 amount);
 
     /**
      * @dev Constructor initializes the ERC721 token with name and symbol
@@ -88,7 +95,7 @@ contract VibeBadge is ERC721, Ownable {
     }
 
     /**
-     * @dev Mints a single badge - User pays mintPrice + 3% fee, all goes to dev
+     * @dev Mints a single badge - Payment stays in contract, dev can withdraw later
      * @param to Address to receive the badge
      * @param uri Token URI for the badge metadata
      * @return tokenId The ID of the newly minted token
@@ -97,7 +104,7 @@ contract VibeBadge is ERC721, Ownable {
      * - mintPrice = $1 in ETH (base price for badge)
      * - 3% fee = $0.03 in ETH (additional fee)
      * - Total required = mintPrice + (mintPrice * 3 / 100)
-     * - All payment goes to dev address
+     * - Payment stays in contract, dev withdraws manually
      */
     function mintBadge(address to, string memory uri) public payable returns (uint256) {
         require(to != address(0), "VibeBadge: mint to zero address");
@@ -109,10 +116,7 @@ contract VibeBadge is ERC721, Ownable {
         
         require(msg.value >= totalRequired, "VibeBadge: insufficient payment");
 
-        // Transfer ALL payment to dev address (mintPrice + fee)
-        (bool success, ) = devAddress.call{value: totalRequired}("");
-        require(success, "VibeBadge: payment transfer failed");
-        
+        // Payment stays in contract (no transfer to dev here)
         emit DevFeeCollected(msg.sender, devAddress, totalRequired);
 
         // Refund any excess payment
@@ -134,7 +138,7 @@ contract VibeBadge is ERC721, Ownable {
     }
 
     /**
-     * @dev Batch mints badges to multiple addresses - All payment goes to dev
+     * @dev Batch mints badges to multiple addresses - Payment stays in contract
      * @param recipients Array of addresses to receive badges
      * @param uris Array of token URIs corresponding to each badge
      */
@@ -149,9 +153,7 @@ contract VibeBadge is ERC721, Ownable {
         
         require(msg.value >= totalRequired, "VibeBadge: insufficient payment for batch");
 
-        // Transfer ALL payment to dev address
-        (bool success, ) = devAddress.call{value: totalRequired}("");
-        require(success, "VibeBadge: payment transfer failed");
+        // Payment stays in contract (no transfer to dev here)
         emit DevFeeCollected(msg.sender, devAddress, totalRequired);
 
         // Refund excess payment
@@ -210,6 +212,77 @@ contract VibeBadge is ERC721, Ownable {
      */
     function getNextTokenId() public view returns (uint256) {
         return nextId;
+    }
+
+    /**
+     * @dev Daily check-in function - User can check in once per day
+     * Tracks streak (consecutive days) and total check-ins
+     */
+    function checkIn() public {
+        uint256 currentDay = block.timestamp / 1 days;
+        uint256 lastDay = lastCheckIn[msg.sender] / 1 days;
+        
+        require(currentDay > lastDay, "VibeBadge: already checked in today");
+        
+        // Update streak: if checked in yesterday, increment; otherwise reset to 1
+        if (currentDay == lastDay + 1) {
+            checkInStreak[msg.sender]++;
+        } else {
+            checkInStreak[msg.sender] = 1;
+        }
+        
+        lastCheckIn[msg.sender] = block.timestamp;
+        totalCheckIns[msg.sender]++;
+        
+        emit CheckedIn(msg.sender, block.timestamp, checkInStreak[msg.sender]);
+    }
+
+    /**
+     * @dev Check if user can check in today
+     * @param user Address to check
+     * @return bool true if user can check in today
+     */
+    function canCheckInToday(address user) public view returns (bool) {
+        uint256 currentDay = block.timestamp / 1 days;
+        uint256 lastDay = lastCheckIn[user] / 1 days;
+        return currentDay > lastDay;
+    }
+
+    /**
+     * @dev Get user's check-in stats
+     * @param user Address to query
+     * @return lastCheckInTime Last check-in timestamp
+     * @return streak Current consecutive days streak
+     * @return total Total check-ins count
+     */
+    function getCheckInStats(address user) public view returns (
+        uint256 lastCheckInTime,
+        uint256 streak,
+        uint256 total
+    ) {
+        return (lastCheckIn[user], checkInStreak[user], totalCheckIns[user]);
+    }
+
+    /**
+     * @dev Owner withdraws all contract balance to dev address
+     * Only callable by contract owner
+     */
+    function withdraw() public onlyOwner {
+        uint256 balance = address(this).balance;
+        require(balance > 0, "VibeBadge: no funds to withdraw");
+        
+        (bool success, ) = devAddress.call{value: balance}("");
+        require(success, "VibeBadge: withdrawal failed");
+        
+        emit FundsWithdrawn(devAddress, balance);
+    }
+
+    /**
+     * @dev Returns contract balance
+     * @return Balance in wei
+     */
+    function getContractBalance() public view returns (uint256) {
+        return address(this).balance;
     }
 
     /**
