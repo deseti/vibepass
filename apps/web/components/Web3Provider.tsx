@@ -32,56 +32,28 @@ function AutoConnectFarcaster() {
   const [hasAttempted, setHasAttempted] = useState(false);
 
   useEffect(() => {
-    console.log('🔍 AutoConnect State:', {
-      isMiniApp,
-      isLoading,
-      isConnected,
-      hasAddress: !!address,
-      address: address?.substring(0, 10) + '...' || 'null',
-      hasAttempted,
-      connectorsCount: connectors.length,
-      contextLoaded: !!context,
-      currentConnector: connector?.name || 'none'
-    });
-
     // Berdasarkan dokumentasi: "If a user already has a connected wallet the connector will automatically connect to it"
     // Jadi kita hanya perlu trigger connect jika belum connected
     if (isMiniApp && !isLoading && context && !isConnected && !hasAttempted) {
-      console.log('🔌 Attempting to connect to Farcaster wallet...');
-      
       // Cari Farcaster connector
       const farcasterConnector = connectors.find(
         (c) => c.id === 'farcaster' || c.name.toLowerCase().includes('farcaster')
       );
 
-      console.log('🔍 Available connectors:', connectors.map(c => ({ id: c.id, name: c.name })));
-
       if (farcasterConnector) {
-        console.log('✅ Found Farcaster connector:', farcasterConnector.name);
-        
         // Trigger connect - akan otomatis connect ke wallet yang sudah connected
         try {
           connect({ connector: farcasterConnector });
           setHasAttempted(true);
-          console.log('✅ Connect triggered');
+          console.log('✅ Farcaster wallet connected');
         } catch (error) {
-          console.error('❌ Connect failed:', error);
+          console.error('❌ Farcaster connect failed:', error);
           setHasAttempted(true);
         }
       } else {
         console.warn('⚠️ Farcaster connector not found');
-        console.log('Available connectors:', connectors);
         setHasAttempted(true);
       }
-    }
-
-    // Log jika sudah connected
-    if (isConnected && address) {
-      console.log('✅ Wallet Connected Successfully:', {
-        address: address.substring(0, 10) + '...',
-        connector: connector?.name,
-        isMiniApp
-      });
     }
   }, [isMiniApp, isLoading, isConnected, address, hasAttempted, connect, connectors, context, connector]);
 

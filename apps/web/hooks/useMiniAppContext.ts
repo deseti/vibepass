@@ -12,13 +12,10 @@ export function useMiniAppContext() {
   useEffect(() => {
     const checkMiniApp = async () => {
       try {
-        console.log('🔍 Checking if running in Mini App...');
         const isInMiniApp = await sdk.isInMiniApp();
-        console.log('📱 Is Mini App:', isInMiniApp);
         setIsMiniApp(isInMiniApp);
 
         if (isInMiniApp) {
-          console.log('📡 Fetching Mini App context...');
           const miniAppContext = await sdk.context;
           setContext(miniAppContext);
           
@@ -26,15 +23,7 @@ export function useMiniAppContext() {
           const provider = sdk.wallet.ethProvider;
           setEthProvider(provider);
 
-          console.log('🎫 Farcaster Mini App Context:', {
-            fid: miniAppContext?.user?.fid,
-            username: miniAppContext?.user?.username,
-            displayName: miniAppContext?.user?.displayName,
-            pfpUrl: miniAppContext?.user?.pfpUrl,
-            platformType: miniAppContext?.client?.platformType,
-            clientFid: miniAppContext?.client?.clientFid,
-            hasEthProvider: !!provider
-          });
+          console.log('✅ Farcaster Mini App initialized');
 
           // Simpan FID saat ini untuk detect user change
           const currentFid = miniAppContext?.user?.fid;
@@ -43,7 +32,7 @@ export function useMiniAppContext() {
             
             // Kalau FID berbeda, clear state dan force disconnect
             if (storedFid && storedFid !== currentFid.toString()) {
-              console.log('🔄 User changed, clearing old session...');
+              console.log('🔄 User changed, reloading...');
               
               // Clear localStorage wagmi state
               Object.keys(localStorage).forEach(key => {
@@ -58,19 +47,13 @@ export function useMiniAppContext() {
             
             // Update stored FID
             localStorage.setItem('farcaster_fid', currentFid.toString());
-            console.log('✅ FID saved:', currentFid);
-          } else {
-            console.warn('⚠️ No FID found in context');
           }
-        } else {
-          console.log('🌐 Running in regular web browser (not Mini App)');
         }
       } catch (error) {
-        console.error('❌ Error checking mini app context:', error);
+        console.error('❌ Mini App init error:', error);
         setIsMiniApp(false);
       } finally {
         setIsLoading(false);
-        console.log('✅ Mini App context check complete');
       }
     };
 

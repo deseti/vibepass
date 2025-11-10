@@ -14,17 +14,6 @@ export default function CheckInPage() {
   
   const contractAddress = CONTRACTS[8453]?.address;
 
-  // Debug logging
-  useEffect(() => {
-    console.log('🔍 CheckIn Page State:', {
-      isConnected,
-      hasAddress: !!address,
-      address: address?.substring(0, 10) + '...' || 'null',
-      contractAddress: contractAddress?.substring(0, 10) + '...' || 'null',
-      isMiniApp
-    });
-  }, [isConnected, address, contractAddress, isMiniApp]);
-
   // Read check-in stats
   const { data: stats, refetch: refetchStats, isLoading: statsLoading, error: statsError } = useReadContract({
     address: contractAddress,
@@ -52,18 +41,6 @@ export default function CheckInPage() {
     }
   });
 
-  // Debug logging untuk query results
-  useEffect(() => {
-    console.log('📊 CheckIn Query Results:', {
-      stats,
-      canCheckIn,
-      statsLoading,
-      canCheckInLoading,
-      statsError: statsError?.message,
-      canCheckInError: canCheckInError?.message
-    });
-  }, [stats, canCheckIn, statsLoading, canCheckInLoading, statsError, canCheckInError]);
-
   // Write check-in
   const { data: hash, writeContract, isPending, error } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
@@ -89,23 +66,11 @@ export default function CheckInPage() {
   }, [isSuccess, refetchStats, refetchCanCheckIn]);
 
   const handleCheckIn = () => {
-    console.log('🖱️ Check-in button clicked!', {
-      contractAddress: contractAddress?.substring(0, 10) + '...',
-      canCheckIn,
-      address: address?.substring(0, 10) + '...'
-    });
-    
-    if (!contractAddress) {
-      console.error('❌ Contract address is missing');
+    if (!contractAddress || !address) {
+      console.error('❌ Check-in failed: missing contract address or user address');
       return;
     }
     
-    if (!address) {
-      console.error('❌ User address is missing');
-      return;
-    }
-    
-    console.log('✅ Calling writeContract...');
     writeContract({
       address: contractAddress,
       abi: VIBEBADGE_ABI,

@@ -17,18 +17,6 @@ export default function StatsPage() {
   const networkName = 'Base Mainnet';
   const [shareSuccess, setShareSuccess] = useState(false);
 
-  // Debug logging
-  useEffect(() => {
-    console.log('🔍 Stats Page State:', {
-      isConnected,
-      hasAddress: !!address,
-      address: address?.substring(0, 10) + '...' || 'null',
-      contractAddress: contractAddress?.substring(0, 10) + '...' || 'null',
-      isMiniApp,
-      chainId
-    });
-  }, [isConnected, address, contractAddress, isMiniApp, chainId]);
-
   const { data: nextTokenId } = useReadContract({
     address: contractAddress,
     abi: VIBEBADGE_ABI,
