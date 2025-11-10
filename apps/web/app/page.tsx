@@ -13,18 +13,6 @@ export default function HomePage() {
   const chainId = useChainId();
   const contractAddress = CONTRACTS[chainId as keyof typeof CONTRACTS]?.address;
 
-  const { data: mintPrice } = useReadContract({
-    address: contractAddress,
-    abi: VIBEBADGE_ABI,
-    functionName: 'mintPrice',
-  });
-
-  const { data: totalCost } = useReadContract({
-    address: contractAddress,
-    abi: VIBEBADGE_ABI,
-    functionName: 'getTotalMintCost',
-  });
-
   const { data: nextTokenId } = useReadContract({
     address: contractAddress,
     abi: VIBEBADGE_ABI,
@@ -90,20 +78,18 @@ export default function HomePage() {
             >
               🎨 Mint Badge Now
             </Link>
-            <a
-              href={`${CONTRACTS[chainId as keyof typeof CONTRACTS]?.explorer}/address/${contractAddress}`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              href="/badges"
               className="mobile-button-secondary text-lg"
             >
-              📜 View Contract
-            </a>
+              🎫 View Badges
+            </Link>
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl mx-auto px-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto px-4">
             <div className="mobile-card text-center">
-              <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent mb-2">
+              <div className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent mb-2">
                 {totalMinted}
               </div>
               <div className="text-gray-400 text-sm">
@@ -112,20 +98,11 @@ export default function HomePage() {
             </div>
             
             <div className="mobile-card text-center">
-              <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent mb-2">
-                {totalCost ? formatEther(totalCost) : '0.00103'}
+              <div className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent mb-2">
+                Base
               </div>
               <div className="text-gray-400 text-sm">
-                ETH to Mint
-              </div>
-            </div>
-            
-            <div className="mobile-card text-center">
-              <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-green-400 to-purple-600 bg-clip-text text-transparent mb-2">
-                3%
-              </div>
-              <div className="text-gray-400 text-sm">
-                System Fee
+                Network (L2)
               </div>
             </div>
           </div>
@@ -158,27 +135,15 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Contract Info */}
-        <div className="mt-16 sm:mt-20 mobile-card px-4 sm:px-8">
-          <h2 className="text-2xl font-bold mb-6 text-center text-purple-400">Contract Information</h2>
-          <div className="text-center">
-            <div className="font-semibold text-gray-500 mb-3 text-sm">Base Mainnet Contract</div>
-            <div className="bg-gray-800 px-4 py-3 rounded-lg inline-block overflow-x-auto max-w-full">
-              <code className="text-purple-400 text-xs sm:text-sm font-mono">
-                {CONTRACTS[8453].address}
-              </code>
-            </div>
-            <div className="mt-4">
-              <a
-                href={`${CONTRACTS[8453].explorer}/address/${CONTRACTS[8453].address}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-purple-400 hover:text-purple-300 transition text-sm font-medium"
-              >
-                View on BaseScan →
-              </a>
-            </div>
-          </div>
+        {/* CTA Section */}
+        <div className="mt-16 sm:mt-20 mobile-card px-6 sm:px-8 py-8 text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-purple-400">Ready to Start?</h2>
+          <p className="text-gray-400 mb-6 max-w-lg mx-auto">
+            Mint your first NFT badge and join the community!
+          </p>
+          <Link href="/mint" className="mobile-button-primary inline-block text-lg">
+            🎨 Mint Badge Now
+          </Link>
         </div>
       </div>
 

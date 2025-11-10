@@ -541,29 +541,6 @@ export default function MintPage() {
               </>
             )}
 
-            <div className="bg-gray-800 rounded-xl p-6 mb-6 border border-gray-700">
-              <h3 className="font-semibold mb-4 text-purple-400">💰 Cost Breakdown</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between text-gray-400">
-                  <span>Base Price:</span>
-                  <span className="font-mono text-white">{mintPrice ? formatEther(mintPrice) : '0.001'} ETH</span>
-                </div>
-                <div className="flex justify-between text-gray-400">
-                  <span>System Fee (3%):</span>
-                  <span className="font-mono text-white">
-                    {mintPrice ? formatEther(BigInt(mintPrice) * 3n / 100n) : '0.00003'} ETH
-                  </span>
-                </div>
-                <div className="border-t border-gray-700 pt-3 mt-3 flex justify-between font-bold">
-                  <span className="text-purple-400">Total Cost:</span>
-                  <span className="font-mono text-purple-400 text-lg">{totalCost ? formatEther(totalCost) : '0.00103'} ETH</span>
-                </div>
-              </div>
-              <p className="mt-4 text-xs text-gray-500">
-                📌 Auto-generated and uploaded to IPFS via Pinata
-              </p>
-            </div>
-
             {uploadError && (
               <div className="bg-red-900/20 border-2 border-red-800 rounded-xl p-4 mb-6 animate-fade-in">
                 <p className="text-red-400 text-sm">

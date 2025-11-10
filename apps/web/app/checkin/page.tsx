@@ -20,7 +20,10 @@ export default function CheckInPage() {
     functionName: 'getCheckInStats',
     args: address ? [address] : undefined,
     query: {
+      enabled: !!address,
       refetchInterval: 3000, // Auto refetch every 3 seconds
+      refetchOnWindowFocus: true,
+      refetchOnMount: true,
     }
   });
 
@@ -30,7 +33,10 @@ export default function CheckInPage() {
     functionName: 'canCheckInToday',
     args: address ? [address] : undefined,
     query: {
+      enabled: !!address,
       refetchInterval: 3000, // Auto refetch every 3 seconds
+      refetchOnWindowFocus: true,
+      refetchOnMount: true,
     }
   });
 

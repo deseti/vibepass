@@ -13,21 +13,8 @@ export default function StatsPage() {
   const { isMiniApp } = useMiniAppContext();
   const chainId = useChainId();
   const contractAddress = CONTRACTS[8453]?.address;
-  const explorerUrl = CONTRACTS[8453]?.explorer;
   const networkName = 'Base Mainnet';
   const [shareSuccess, setShareSuccess] = useState(false);
-
-  const { data: mintPrice } = useReadContract({
-    address: contractAddress,
-    abi: VIBEBADGE_ABI,
-    functionName: 'mintPrice',
-  });
-
-  const { data: totalCost } = useReadContract({
-    address: contractAddress,
-    abi: VIBEBADGE_ABI,
-    functionName: 'getTotalMintCost',
-  });
 
   const { data: nextTokenId } = useReadContract({
     address: contractAddress,
@@ -42,7 +29,10 @@ export default function StatsPage() {
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
     query: {
+      enabled: !!address,
       refetchInterval: 5000, // Auto refetch every 5 seconds
+      refetchOnWindowFocus: true,
+      refetchOnMount: true,
     }
   });
 
@@ -52,7 +42,10 @@ export default function StatsPage() {
     functionName: 'getCheckInStats',
     args: address ? [address] : undefined,
     query: {
+      enabled: !!address,
       refetchInterval: 5000, // Auto refetch every 5 seconds
+      refetchOnWindowFocus: true,
+      refetchOnMount: true,
     }
   });
 
@@ -291,14 +284,10 @@ export default function StatsPage() {
         {/* Global Stats */}
         <div className="mobile-card p-6 mb-6">
           <h3 className="text-xl font-bold mb-4 text-purple-400">🌐 Global Statistics</h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <div className="text-center">
-              <div className="text-3xl font-bold text-purple-400">{totalMinted}</div>
-              <div className="text-xs text-gray-500 mt-1">Total Badges</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-400">{mintPrice ? formatEther(mintPrice) : '0.001'}</div>
-              <div className="text-xs text-gray-500 mt-1">Mint Price (ETH)</div>
+              <div className="text-4xl font-bold text-purple-400">{totalMinted}</div>
+              <div className="text-sm text-gray-500 mt-1">Total Badges Minted</div>
             </div>
           </div>
         </div>
