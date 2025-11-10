@@ -26,35 +26,60 @@ const config = createConfig({
 
 // Auto-connect component untuk Farcaster Mini App
 function AutoConnectFarcaster() {
-  const { isMiniApp, isLoading } = useMiniAppContext();
-  const { isConnected } = useAccount();
+  const { isMiniApp, isLoading, context } = useMiniAppContext();
+  const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
   const [hasAttempted, setHasAttempted] = useState(false);
 
   useEffect(() => {
-    // Jika di Mini App, tidak loading, belum connected, dan belum pernah attempt
-    if (isMiniApp && !isLoading && !isConnected && !hasAttempted) {
+    console.log('🔍 AutoConnect State:', {
+      isMiniApp,
+      isLoading,
+      isConnected,
+      hasAddress: !!address,
+      address: address?.substring(0, 10) + '...',
+      hasAttempted,
+      connectorsCount: connectors.length,
+      contextLoaded: !!context
+    });
+
+    // Jika di Mini App, tidak loading, context sudah ada, belum connected, dan belum pernah attempt
+    if (isMiniApp && !isLoading && context && !isConnected && !hasAttempted) {
       console.log('🔌 Auto-connecting Farcaster wallet...');
       
-      // Cari Farcaster connector
-      const farcasterConnector = connectors.find(
-        (c) => c.id === 'farcaster' || c.name.toLowerCase().includes('farcaster')
-      );
+      // Tunggu sebentar untuk memastikan SDK benar-benar siap
+      setTimeout(() => {
+        // Cari Farcaster connector
+        const farcasterConnector = connectors.find(
+          (c) => c.id === 'farcaster' || c.name.toLowerCase().includes('farcaster')
+        );
 
-      if (farcasterConnector) {
-        try {
-          connect({ connector: farcasterConnector });
-          setHasAttempted(true);
-          console.log('✅ Auto-connect initiated');
-        } catch (error) {
-          console.error('❌ Auto-connect failed:', error);
+        console.log('🔍 Available connectors:', connectors.map(c => ({ id: c.id, name: c.name })));
+
+        if (farcasterConnector) {
+          try {
+            console.log('✅ Found Farcaster connector, attempting connect...');
+            connect({ connector: farcasterConnector });
+            setHasAttempted(true);
+          } catch (error) {
+            console.error('❌ Auto-connect failed:', error);
+            setHasAttempted(true);
+          }
+        } else {
+          console.warn('⚠️ Farcaster connector not found in connectors list');
           setHasAttempted(true);
         }
-      } else {
-        console.warn('⚠️ Farcaster connector not found');
-      }
+      }, 500); // Delay 500ms untuk memastikan SDK siap
     }
-  }, [isMiniApp, isLoading, isConnected, hasAttempted, connect, connectors]);
+
+    // Log jika sudah connected
+    if (isConnected && address) {
+      console.log('✅ Wallet Connected:', {
+        address: address.substring(0, 10) + '...',
+        isMiniApp
+      });
+    }
+  }, [isMiniApp, isLoading, isConnected, address, hasAttempted, connect, connectors, context]);
 
   return null; // This component doesn't render anything
 }

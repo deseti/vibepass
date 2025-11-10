@@ -14,8 +14,19 @@ export default function CheckInPage() {
   
   const contractAddress = CONTRACTS[8453]?.address;
 
+  // Debug logging
+  useEffect(() => {
+    console.log('🔍 CheckIn Page State:', {
+      isConnected,
+      hasAddress: !!address,
+      address: address?.substring(0, 10) + '...' || 'null',
+      contractAddress: contractAddress?.substring(0, 10) + '...' || 'null',
+      isMiniApp
+    });
+  }, [isConnected, address, contractAddress, isMiniApp]);
+
   // Read check-in stats
-  const { data: stats, refetch: refetchStats } = useReadContract({
+  const { data: stats, refetch: refetchStats, isLoading: statsLoading, error: statsError } = useReadContract({
     address: contractAddress,
     abi: VIBEBADGE_ABI,
     functionName: 'getCheckInStats',
@@ -28,7 +39,7 @@ export default function CheckInPage() {
     }
   });
 
-  const { data: canCheckIn, refetch: refetchCanCheckIn } = useReadContract({
+  const { data: canCheckIn, refetch: refetchCanCheckIn, isLoading: canCheckInLoading, error: canCheckInError } = useReadContract({
     address: contractAddress,
     abi: VIBEBADGE_ABI,
     functionName: 'canCheckInToday',
@@ -40,6 +51,18 @@ export default function CheckInPage() {
       refetchOnMount: true,
     }
   });
+
+  // Debug logging untuk query results
+  useEffect(() => {
+    console.log('📊 CheckIn Query Results:', {
+      stats,
+      canCheckIn,
+      statsLoading,
+      canCheckInLoading,
+      statsError: statsError?.message,
+      canCheckInError: canCheckInError?.message
+    });
+  }, [stats, canCheckIn, statsLoading, canCheckInLoading, statsError, canCheckInError]);
 
   // Write check-in
   const { data: hash, writeContract, isPending, error } = useWriteContract();
@@ -66,7 +89,23 @@ export default function CheckInPage() {
   }, [isSuccess, refetchStats, refetchCanCheckIn]);
 
   const handleCheckIn = () => {
-    if (!contractAddress) return;
+    console.log('🖱️ Check-in button clicked!', {
+      contractAddress: contractAddress?.substring(0, 10) + '...',
+      canCheckIn,
+      address: address?.substring(0, 10) + '...'
+    });
+    
+    if (!contractAddress) {
+      console.error('❌ Contract address is missing');
+      return;
+    }
+    
+    if (!address) {
+      console.error('❌ User address is missing');
+      return;
+    }
+    
+    console.log('✅ Calling writeContract...');
     writeContract({
       address: contractAddress,
       abi: VIBEBADGE_ABI,

@@ -185,36 +185,67 @@ export default function MintPage() {
   };
 
   const handleMint = async () => {
-    if (!address || !contractAddress || !totalCost || !eventName.trim()) return;
+    console.log('🖱️ Mint button clicked!', {
+      hasAddress: !!address,
+      address: address?.substring(0, 10) + '...',
+      hasContractAddress: !!contractAddress,
+      contractAddress: contractAddress?.substring(0, 10) + '...',
+      hasTotalCost: !!totalCost,
+      totalCost: totalCost?.toString(),
+      hasEventName: !!eventName.trim(),
+      eventName
+    });
     
+    if (!address || !contractAddress || !totalCost || !eventName.trim()) {
+      console.error('❌ Missing required fields:', {
+        address: !!address,
+        contractAddress: !!contractAddress,
+        totalCost: !!totalCost,
+        eventName: !!eventName.trim()
+      });
+      return;
+    }
+    
+    console.log('✅ All validations passed, starting mint process...');
     setIsUploading(true);
     setUploadError(null);
 
     try {
       // 1. Get random badge level
+      console.log('📦 Step 1: Getting random badge level...');
       const { getRandomBadgeLevel } = await import('@/lib/badgeGenerator');
       const randomLevel = getRandomBadgeLevel();
       setMintedLevel(randomLevel);
+      console.log('✅ Badge level:', randomLevel);
       
       // 2. Generate SVG badge
+      console.log('🎨 Step 2: Generating SVG badge...');
       const svg = generateBadgeSVG(eventName, randomLevel);
+      console.log('✅ SVG generated');
       
       // 3. Upload SVG to Pinata
+      console.log('☁️ Step 3: Uploading SVG to Pinata...');
       const imageIpfsUrl = await uploadSVGToPinata(svg, `${eventName}-${randomLevel}-badge.svg`);
       setMintedBadgeUrl(imageIpfsUrl);
+      console.log('✅ SVG uploaded:', imageIpfsUrl);
       
       // 4. Generate metadata
+      console.log('📝 Step 4: Generating metadata...');
       const metadata = generateBadgeMetadata(
         eventName,
         randomLevel,
         imageIpfsUrl,
         `${randomLevel} tier badge for ${eventName} event`
       );
+      console.log('✅ Metadata generated');
       
       // 5. Upload metadata to Pinata
+      console.log('☁️ Step 5: Uploading metadata to Pinata...');
       const metadataIpfsUrl = await uploadToPinata(metadata, `${eventName}-${randomLevel}-metadata.json`);
+      console.log('✅ Metadata uploaded:', metadataIpfsUrl);
       
       // 6. Mint NFT with metadata URI
+      console.log('⛓️ Step 6: Calling writeContract to mint NFT...');
       writeContract({
         address: contractAddress,
         abi: VIBEBADGE_ABI,
@@ -222,8 +253,9 @@ export default function MintPage() {
         args: [address, metadataIpfsUrl],
         value: totalCost,
       });
+      console.log('✅ writeContract called successfully');
     } catch (err: any) {
-      console.error('Upload/Mint error:', err);
+      console.error('❌ Upload/Mint error:', err);
       setUploadError(err.message || 'Failed to upload badge to IPFS');
       setIsUploading(false);
     }

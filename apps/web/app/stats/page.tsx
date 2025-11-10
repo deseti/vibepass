@@ -6,7 +6,7 @@ import { CONTRACTS, VIBEBADGE_ABI, DEV_ADDRESS } from '@/lib/contracts';
 import { formatEther } from 'viem';
 import { useMiniAppContext } from '@/hooks/useMiniAppContext';
 import { FarcasterProfile } from '@/components/FarcasterProfile';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function StatsPage() {
   const { address, isConnected } = useAccount();
@@ -16,6 +16,18 @@ export default function StatsPage() {
   const contractAddress = CONTRACTS[8453]?.address;
   const networkName = 'Base Mainnet';
   const [shareSuccess, setShareSuccess] = useState(false);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('🔍 Stats Page State:', {
+      isConnected,
+      hasAddress: !!address,
+      address: address?.substring(0, 10) + '...' || 'null',
+      contractAddress: contractAddress?.substring(0, 10) + '...' || 'null',
+      isMiniApp,
+      chainId
+    });
+  }, [isConnected, address, contractAddress, isMiniApp, chainId]);
 
   const { data: nextTokenId } = useReadContract({
     address: contractAddress,
