@@ -36,18 +36,24 @@ export default function StatsPage() {
   });
 
   // User-specific stats
-  const { data: userBalance } = useReadContract({
+  const { data: userBalance, refetch: refetchUserBalance } = useReadContract({
     address: contractAddress,
     abi: VIBEBADGE_ABI,
     functionName: 'balanceOf',
     args: address ? [address] : undefined,
+    query: {
+      refetchInterval: 5000, // Auto refetch every 5 seconds
+    }
   });
 
-  const { data: checkInStats } = useReadContract({
+  const { data: checkInStats, refetch: refetchCheckInStats } = useReadContract({
     address: contractAddress,
     abi: VIBEBADGE_ABI,
     functionName: 'getCheckInStats',
     args: address ? [address] : undefined,
+    query: {
+      refetchInterval: 5000, // Auto refetch every 5 seconds
+    }
   });
 
   const totalMinted = nextTokenId ? Number(nextTokenId) - 1 : 0;
@@ -94,6 +100,11 @@ export default function StatsPage() {
     setTimeout(() => setShareSuccess(false), 3000);
   };
 
+  const handleManualRefresh = () => {
+    refetchUserBalance();
+    refetchCheckInStats();
+  };
+
   return (
     <div className="min-h-screen bg-black pb-20 sm:pb-0">
       <nav className="border-b border-gray-800 bg-gray-900/80 backdrop-blur-lg sticky top-0 z-50">
@@ -128,7 +139,18 @@ export default function StatsPage() {
       </nav>
 
       <div className="mobile-container py-8 sm:py-12 animate-fade-in">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-purple-400">📊 My Activity Stats</h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-purple-400">📊 My Activity Stats</h1>
+          {isConnected && (
+            <button
+              onClick={handleManualRefresh}
+              className="flex items-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 text-purple-300 rounded-lg border border-gray-700 transition text-sm"
+            >
+              <span className="text-lg">🔄</span>
+              <span className="hidden sm:inline">Refresh</span>
+            </button>
+          )}
+        </div>
 
         {!isConnected ? (
           <div className="mobile-card p-8 text-center mb-8">

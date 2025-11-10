@@ -19,6 +19,9 @@ export default function CheckInPage() {
     abi: VIBEBADGE_ABI,
     functionName: 'getCheckInStats',
     args: address ? [address] : undefined,
+    query: {
+      refetchInterval: 3000, // Auto refetch every 3 seconds
+    }
   });
 
   const { data: canCheckIn, refetch: refetchCanCheckIn } = useReadContract({
@@ -26,23 +29,32 @@ export default function CheckInPage() {
     abi: VIBEBADGE_ABI,
     functionName: 'canCheckInToday',
     args: address ? [address] : undefined,
+    query: {
+      refetchInterval: 3000, // Auto refetch every 3 seconds
+    }
   });
 
   // Write check-in
   const { data: hash, writeContract, isPending, error } = useWriteContract();
   const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+  const [shareSuccess, setShareSuccess] = useState(false);
 
   const lastCheckInTime = stats?.[0] ? Number(stats[0]) : 0;
   const streak = stats?.[1] ? Number(stats[1]) : 0;
   const totalCheckIns = stats?.[2] ? Number(stats[2]) : 0;
 
+  // Aggressive refetch after success
   useEffect(() => {
     if (isSuccess) {
-      // Refetch stats after successful check-in
-      setTimeout(() => {
+      const refetchAll = () => {
         refetchStats();
         refetchCanCheckIn();
-      }, 2000);
+      };
+      // Immediate refetch
+      refetchAll();
+      // Refetch every second for 10 seconds
+      const interval = setInterval(refetchAll, 1000);
+      setTimeout(() => clearInterval(interval), 10000);
     }
   }, [isSuccess, refetchStats, refetchCanCheckIn]);
 
@@ -53,6 +65,28 @@ export default function CheckInPage() {
       abi: VIBEBADGE_ABI,
       functionName: 'checkIn',
     });
+  };
+
+  const handleShare = () => {
+    const text = `🎉 Just checked in on VibeBadge!\n\n🔥 Current Streak: ${streak} days\n✅ Total Check-ins: ${totalCheckIns}\n\nKeep your streak alive! 🚀`;
+    const url = 'https://app.vibepas.xyz/checkin';
+    
+    if (typeof window !== 'undefined' && (window as any).farcaster) {
+      (window as any).farcaster.share({
+        text,
+        embeds: [url],
+      });
+    } else {
+      const warpcastUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}&embeds[]=${encodeURIComponent(url)}`;
+      window.open(warpcastUrl, '_blank');
+    }
+    setShareSuccess(true);
+    setTimeout(() => setShareSuccess(false), 3000);
+  };
+
+  const handleManualRefresh = () => {
+    refetchStats();
+    refetchCanCheckIn();
   };
 
   const formatDate = (timestamp: number) => {
@@ -123,6 +157,17 @@ export default function CheckInPage() {
           </div>
         ) : (
           <div className="max-w-2xl mx-auto animate-fade-in">
+            {/* Manual Refresh Button */}
+            <div className="flex justify-end mb-4">
+              <button
+                onClick={handleManualRefresh}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 text-purple-300 rounded-lg border border-gray-700 transition text-sm"
+              >
+                <span className="text-lg">🔄</span>
+                <span>Refresh Data</span>
+              </button>
+            </div>
+
             {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
               <div className="mobile-card text-center p-6">
@@ -164,9 +209,16 @@ export default function CheckInPage() {
                   <p className="text-gray-400 mb-4">
                     Come back tomorrow to continue your streak!
                   </p>
-                  <div className="text-sm text-gray-500">
-                    Streak: <span className="text-purple-400 font-bold">{streak} days</span>
+                  <div className="text-lg mb-6">
+                    Current Streak: <span className="text-purple-400 font-bold text-2xl">{streak} 🔥</span>
                   </div>
+                  <button
+                    onClick={handleShare}
+                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-semibold py-3 px-6 rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2"
+                  >
+                    <span className="text-xl">🔗</span>
+                    <span>{shareSuccess ? 'Shared!' : 'Share My Check-In'}</span>
+                  </button>
                 </div>
               ) : canCheckIn ? (
                 <div>
