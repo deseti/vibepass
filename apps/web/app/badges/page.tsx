@@ -144,14 +144,24 @@ export default function BadgesPage() {
                     <p className="text-gray-400 text-xs sm:text-sm mb-4">
                       Event participation NFT on Base L2
                     </p>
-                    <a
-                      href={`${explorerUrl}/token/${contractAddress}?a=${index + 1}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block text-center px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-700 transition active:scale-95"
-                    >
-                      📜 View on BaseScan
-                    </a>
+                    <div className="flex gap-2">
+                      <a
+                        href={`https://gateway.pinata.cloud/ipfs/badge-placeholder`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 text-center px-3 py-2 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-700 transition active:scale-95"
+                      >
+                        🖼️ View Image
+                      </a>
+                      <a
+                        href={`${explorerUrl}/token/${contractAddress}?a=${index + 1}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 text-center px-3 py-2 bg-gray-700 text-white rounded-lg text-sm font-semibold hover:bg-gray-600 transition active:scale-95"
+                      >
+                        📜 BaseScan
+                      </a>
+                    </div>
                   </div>
                 </div>
               ))}

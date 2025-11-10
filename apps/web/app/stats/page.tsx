@@ -56,7 +56,11 @@ export default function StatsPage() {
   const totalCheckIns = checkInStats?.[2] ? Number(checkInStats[2]) : 0;
 
   // Calculate user level and rank
-  const totalActivity = userMints + totalCheckIns;
+  // Each mint = 60% activity, each check-in = 40% activity
+  const mintActivity = userMints * 0.6;
+  const checkInActivity = totalCheckIns * 0.4;
+  const totalActivity = Math.floor(mintActivity + checkInActivity);
+  
   const getUserLevel = () => {
     if (totalActivity >= 100) return { level: 10, name: '🏆 Legend', color: 'from-yellow-400 to-orange-500' };
     if (totalActivity >= 50) return { level: 9, name: '💎 Diamond', color: 'from-blue-400 to-cyan-500' };
@@ -211,10 +215,11 @@ export default function StatsPage() {
                 <div className="text-3xl mb-2">🎨</div>
                 <div className="text-2xl font-bold text-purple-400">{userMints}</div>
                 <div className="text-xs text-gray-500 mt-1">Badges Minted</div>
+                <div className="text-xs text-purple-400 mt-1">+{Math.floor(userMints * 60)}% Activity</div>
               </div>
 
               <div className="mobile-card p-4 text-center">
-                <div className="text-3xl mb-2">�</div>
+                <div className="text-3xl mb-2">🔥</div>
                 <div className="text-2xl font-bold text-orange-400">{checkInStreak}</div>
                 <div className="text-xs text-gray-500 mt-1">Day Streak</div>
               </div>
@@ -223,6 +228,7 @@ export default function StatsPage() {
                 <div className="text-3xl mb-2">✅</div>
                 <div className="text-2xl font-bold text-green-400">{totalCheckIns}</div>
                 <div className="text-xs text-gray-500 mt-1">Total Check-ins</div>
+                <div className="text-xs text-green-400 mt-1">+{Math.floor(totalCheckIns * 40)}% Activity</div>
               </div>
 
               <div className="mobile-card p-4 text-center">
@@ -230,6 +236,104 @@ export default function StatsPage() {
                 <div className="text-2xl font-bold text-blue-400">{totalActivity}</div>
                 <div className="text-xs text-gray-500 mt-1">Total Activity</div>
               </div>
+            </div>
+
+            {/* My Onchain Activity */}
+            <div className="mobile-card p-6 mb-6">
+              <h3 className="text-xl font-bold mb-4 text-purple-400 flex items-center gap-2">
+                <span>⛓️</span>
+                <span>My Onchain Activity</span>
+              </h3>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center py-3 border-b border-gray-800">
+                  <div className="flex items-center gap-3">
+                    <div className="text-2xl">💰</div>
+                    <div>
+                      <div className="text-sm font-semibold text-gray-300">Transaction Volume</div>
+                      <div className="text-xs text-gray-500">Total value transacted</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-purple-400">
+                      {(userMints * 0.0001).toFixed(4)} ETH
+                    </div>
+                    <div className="text-xs text-gray-500">≈ ${(userMints * 0.0001 * 2800).toFixed(2)}</div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center py-3 border-b border-gray-800">
+                  <div className="flex items-center gap-3">
+                    <div className="text-2xl">📝</div>
+                    <div>
+                      <div className="text-sm font-semibold text-gray-300">Total Transactions</div>
+                      <div className="text-xs text-gray-500">Onchain interactions</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-blue-400">{userMints + totalCheckIns}</div>
+                    <div className="text-xs text-gray-500">txs</div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center py-3 border-b border-gray-800">
+                  <div className="flex items-center gap-3">
+                    <div className="text-2xl">🎨</div>
+                    <div>
+                      <div className="text-sm font-semibold text-gray-300">NFT Mints</div>
+                      <div className="text-xs text-gray-500">Badge minting activity</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-purple-400">{userMints}</div>
+                    <div className="text-xs text-gray-500">mints</div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center py-3 border-b border-gray-800">
+                  <div className="flex items-center gap-3">
+                    <div className="text-2xl">✅</div>
+                    <div>
+                      <div className="text-sm font-semibold text-gray-300">Check-in Transactions</div>
+                      <div className="text-xs text-gray-500">Daily activity tracking</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-green-400">{totalCheckIns}</div>
+                    <div className="text-xs text-gray-500">check-ins</div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between items-center py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="text-2xl">⚡</div>
+                    <div>
+                      <div className="text-sm font-semibold text-gray-300">Gas Spent</div>
+                      <div className="text-xs text-gray-500">Total network fees paid</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-orange-400">
+                      ~{((userMints + totalCheckIns) * 0.00002).toFixed(5)} ETH
+                    </div>
+                    <div className="text-xs text-gray-500">≈ ${((userMints + totalCheckIns) * 0.00002 * 2800).toFixed(2)}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Wallet Link */}
+              {address && (
+                <div className="mt-4 pt-4 border-t border-gray-800">
+                  <a
+                    href={`https://basescan.org/address/${address}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full py-3 bg-gray-800 hover:bg-gray-700 text-purple-300 rounded-lg transition text-sm font-semibold"
+                  >
+                    <span>🔍</span>
+                    <span>View Full History on BaseScan</span>
+                  </a>
+                </div>
+              )}
             </div>
 
             {/* Level System Info */}
