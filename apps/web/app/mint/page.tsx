@@ -6,7 +6,7 @@ import { useAccount, useConnect, useReadContract, useWriteContract, useWaitForTr
 import { CONTRACTS, VIBEBADGE_ABI, DEV_ADDRESS } from '@/lib/contracts';
 import { formatEther } from 'viem';
 import { generateBadgeSVG, generateBadgeMetadata, type BadgeLevel } from '@/lib/badgeGenerator';
-import { uploadSVGToPinata, uploadToPinata } from '@/lib/pinata';
+import { uploadSVGToPinata, uploadToPinata, ipfsToHttps } from '@/lib/pinata';
 import { useMiniAppContext } from '@/hooks/useMiniAppContext';
 import { FarcasterProfile } from '@/components/FarcasterProfile';
 
@@ -298,7 +298,7 @@ export default function MintPage() {
             </button>
             {mintedBadgeUrl && (
               <a
-                href={mintedBadgeUrl}
+                href={ipfsToHttps(mintedBadgeUrl)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mobile-button-primary"
@@ -581,6 +581,30 @@ export default function MintPage() {
                 </p>
               </div>
             )}
+
+            {/* Security Info Box */}
+            <div className="bg-purple-900/10 border border-purple-800/30 rounded-xl p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <div className="text-2xl flex-shrink-0">🛡️</div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-purple-400 text-sm mb-1">
+                    Safe Transaction
+                  </h3>
+                  <p className="text-xs text-gray-400 leading-relaxed">
+                    Your wallet may show a warning about this transaction. This is normal for NFT minting. 
+                    VibeBadge uses a verified smart contract on Base Network.{' '}
+                    <a 
+                      href={`${CONTRACTS[8453]?.explorer}/address/${contractAddress}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-purple-400 hover:text-purple-300 underline"
+                    >
+                      View Contract
+                    </a>
+                  </p>
+                </div>
+              </div>
+            </div>
 
             <button
               onClick={mintMode === 'auto' ? handleMint : handleManualMint}
