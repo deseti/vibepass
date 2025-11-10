@@ -125,20 +125,32 @@ export default function MintPage() {
     setUploadError(null);
 
     try {
+      console.log('📤 Starting manual mint with file:', { 
+        name: selectedFile.name, 
+        size: selectedFile.size, 
+        type: selectedFile.type 
+      });
+
       // 1. Upload user's image to Pinata
       const formData = new FormData();
       formData.append('file', selectedFile);
       
+      console.log('📤 Uploading to /api/upload-file...');
       const uploadRes = await fetch('/api/upload-file', {
         method: 'POST',
         body: formData,
       });
 
+      console.log('📥 Upload response status:', uploadRes.status);
+
       if (!uploadRes.ok) {
-        throw new Error('Failed to upload image');
+        const errorData = await uploadRes.json();
+        console.error('❌ Upload failed:', errorData);
+        throw new Error(errorData.error || 'Failed to upload image');
       }
 
       const { ipfsUrl: imageIpfsUrl } = await uploadRes.json();
+      console.log('✅ Image uploaded to IPFS:', imageIpfsUrl);
       setMintedBadgeUrl(imageIpfsUrl);
       
       // 2. Generate metadata for custom badge
@@ -153,10 +165,13 @@ export default function MintPage() {
         ],
       };
       
+      console.log('📤 Uploading metadata to IPFS...');
       // 3. Upload metadata to Pinata
       const metadataIpfsUrl = await uploadToPinata(metadata, `${eventName}-custom-metadata.json`);
+      console.log('✅ Metadata uploaded to IPFS:', metadataIpfsUrl);
       
       // 4. Mint NFT with metadata URI
+      console.log('🎨 Minting NFT...');
       writeContract({
         address: contractAddress,
         abi: VIBEBADGE_ABI,
@@ -165,7 +180,7 @@ export default function MintPage() {
         value: totalCost,
       });
     } catch (err: any) {
-      console.error('Upload/Mint error:', err);
+      console.error('❌ Upload/Mint error:', err);
       setUploadError(err.message || 'Failed to upload badge to IPFS');
       setIsUploading(false);
     }
