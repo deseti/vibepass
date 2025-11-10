@@ -13,6 +13,11 @@ const MiniAppInit = dynamic(
   { ssr: false }
 );
 
+const AddMiniAppPrompt = dynamic(
+  () => import('@/components/AddMiniAppPrompt'),
+  { ssr: false }
+);
+
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
@@ -64,6 +69,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <MiniAppInit />
         <Web3Provider>
+          <AddMiniAppPrompt />
           {children}
         </Web3Provider>
       </body>
