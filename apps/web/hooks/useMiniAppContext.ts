@@ -7,6 +7,7 @@ export function useMiniAppContext() {
   const [isMiniApp, setIsMiniApp] = useState(false);
   const [context, setContext] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [ethProvider, setEthProvider] = useState<any>(null);
 
   useEffect(() => {
     const checkMiniApp = async () => {
@@ -17,6 +18,18 @@ export function useMiniAppContext() {
         if (isInMiniApp) {
           const miniAppContext = await sdk.context;
           setContext(miniAppContext);
+          
+          // Get Ethereum Provider dari SDK
+          const provider = sdk.wallet.ethProvider;
+          setEthProvider(provider);
+
+          console.log('🎫 Farcaster Mini App Context:', {
+            fid: miniAppContext?.user?.fid,
+            username: miniAppContext?.user?.username,
+            displayName: miniAppContext?.user?.displayName,
+            platformType: miniAppContext?.client?.platformType,
+            clientFid: miniAppContext?.client?.clientFid,
+          });
 
           // Simpan FID saat ini untuk detect user change
           const currentFid = miniAppContext?.user?.fid;
@@ -53,7 +66,7 @@ export function useMiniAppContext() {
     checkMiniApp();
   }, []);
 
-  return { isMiniApp, context, isLoading };
+  return { isMiniApp, context, isLoading, ethProvider };
 }
 
 // Helper untuk get user info dari context
@@ -65,6 +78,8 @@ export function useUserFromContext() {
     username: context?.user?.username,
     displayName: context?.user?.displayName,
     pfpUrl: context?.user?.pfpUrl,
+    bio: context?.user?.bio,
+    location: context?.user?.location,
     isMiniApp,
   };
 }

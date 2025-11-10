@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useAccount, useConnect, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { CONTRACTS, VIBEBADGE_ABI } from '@/lib/contracts';
 import { useMiniAppContext } from '@/hooks/useMiniAppContext';
+import { FarcasterProfile } from '@/components/FarcasterProfile';
 
 export default function CheckInPage() {
   const { address, isConnected } = useAccount();
@@ -130,14 +131,17 @@ export default function CheckInPage() {
                 </Link>
               </div>
             </div>
-            {!isMiniApp && (
-              <button
-                onClick={() => connectors.length > 0 && connect({ connector: connectors[0] })}
-                className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition active:scale-95"
-              >
-                {isConnected ? '🟢 Connected' : 'Connect'}
-              </button>
-            )}
+            <div className="flex items-center gap-3">
+              <FarcasterProfile />
+              {!isMiniApp && (
+                <button
+                  onClick={() => connectors.length > 0 && connect({ connector: connectors[0] })}
+                  className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition active:scale-95"
+                >
+                  {isConnected ? '🟢 Connected' : 'Connect'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </nav>

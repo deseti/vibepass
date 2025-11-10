@@ -8,6 +8,7 @@ import { formatEther } from 'viem';
 import { generateBadgeSVG, generateBadgeMetadata, type BadgeLevel } from '@/lib/badgeGenerator';
 import { uploadSVGToPinata, uploadToPinata } from '@/lib/pinata';
 import { useMiniAppContext } from '@/hooks/useMiniAppContext';
+import { FarcasterProfile } from '@/components/FarcasterProfile';
 
 export default function MintPage() {
   const [eventName, setEventName] = useState('');
@@ -238,14 +239,17 @@ export default function MintPage() {
               <Link href="/" className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
                 🎫 VibeBadge
               </Link>
-              {!isMiniApp && (
-                <button
-                  onClick={() => connectors.length > 0 && connect({ connector: connectors[0] })}
-                  className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition active:scale-95"
-                >
-                  {isConnected ? '🟢 Connected' : 'Connect'}
-                </button>
-              )}
+              <div className="flex items-center gap-3 ml-auto">
+                <FarcasterProfile />
+                {!isMiniApp && (
+                  <button
+                    onClick={() => connectors.length > 0 && connect({ connector: connectors[0] })}
+                    className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition active:scale-95"
+                  >
+                    {isConnected ? '🟢 Connected' : 'Connect'}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </nav>
@@ -362,14 +366,17 @@ export default function MintPage() {
                 </Link>
               </div>
             </div>
-            {!isMiniApp && (
-              <button
-                onClick={() => connectors.length > 0 && connect({ connector: connectors[0] })}
-                className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition active:scale-95"
-              >
-                {isConnected ? '🟢 Connected' : 'Connect'}
-              </button>
-            )}
+            <div className="flex items-center gap-3">
+              <FarcasterProfile />
+              {!isMiniApp && (
+                <button
+                  onClick={() => connectors.length > 0 && connect({ connector: connectors[0] })}
+                  className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition active:scale-95"
+                >
+                  {isConnected ? '🟢 Connected' : 'Connect'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </nav>

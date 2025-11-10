@@ -5,6 +5,7 @@ import { useReadContract, useChainId, useAccount, useConnect } from 'wagmi';
 import { CONTRACTS, VIBEBADGE_ABI, DEV_ADDRESS } from '@/lib/contracts';
 import { formatEther } from 'viem';
 import { useMiniAppContext } from '@/hooks/useMiniAppContext';
+import { FarcasterProfile } from '@/components/FarcasterProfile';
 import { useState } from 'react';
 
 export default function StatsPage() {
@@ -119,14 +120,17 @@ export default function StatsPage() {
                 </Link>
               </div>
             </div>
-            {!isMiniApp && (
-              <button
-                onClick={() => connectors.length > 0 && connect({ connector: connectors[0] })}
-                className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition active:scale-95"
-              >
-                {isConnected ? '🟢 Connected' : 'Connect'}
-              </button>
-            )}
+            <div className="flex items-center gap-3">
+              <FarcasterProfile />
+              {!isMiniApp && (
+                <button
+                  onClick={() => connectors.length > 0 && connect({ connector: connectors[0] })}
+                  className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition active:scale-95"
+                >
+                  {isConnected ? '🟢 Connected' : 'Connect'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </nav>
