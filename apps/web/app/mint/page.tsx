@@ -15,6 +15,11 @@ export default function MintPage() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [mintedBadgeUrl, setMintedBadgeUrl] = useState<string>('');
   const [mintedLevel, setMintedLevel] = useState<BadgeLevel | null>(null);
+  const [shareSuccess, setShareSuccess] = useState(false);
+  const [mintMode, setMintMode] = useState<'auto' | 'manual'>('auto');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [description, setDescription] = useState('');
   
   const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
@@ -75,6 +80,108 @@ export default function MintPage() {
       }
     }
   }, [isMiniApp, miniAppLoading, isConnected, connectors, connect]);
+
+  const handleShare = () => {
+    const levelEmoji = mintedLevel === 'DIAMOND' ? '💎' : mintedLevel === 'GOLD' ? '🥇' : '🥈';
+    const rarity = mintedLevel === 'DIAMOND' ? 'Legendary' : mintedLevel === 'GOLD' ? 'Rare' : 'Common';
+    const text = `🎉 Just minted a ${levelEmoji} ${mintedLevel} badge on VibeBadge!\n\n✨ Rarity: ${rarity}\n🎫 Event: ${eventName}\n\nMint your own badge now! 🚀`;
+    const url = 'https://app.vibepas.xyz/mint';
+    
+    // Check if Farcaster context is available
+    if (typeof window !== 'undefined' && (window as any).farcaster) {
+      (window as any).farcaster.share({
+        text,
+        embeds: [url],
+      });
+    } else {
+      // Fallback to Warpcast intent
+      const warpcastUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}&embeds[]=${encodeURIComponent(url)}`;
+      window.open(warpcastUrl, '_blank');
+    }
+    setShareSuccess(true);
+    setTimeout(() => setShareSuccess(false), 3000);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp', 'image/svg+xml'];
+    if (!validTypes.includes(file.type)) {
+      setUploadError('Please upload a valid image file (PNG, JPG, GIF, WebP, or SVG)');
+      return;
+    }
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError('File size must be less than 10MB');
+      return;
+    }
+
+    setSelectedFile(file);
+    setUploadError(null);
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFilePreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleManualMint = async () => {
+    if (!address || !contractAddress || !totalCost || !eventName.trim() || !selectedFile) return;
+    
+    setIsUploading(true);
+    setUploadError(null);
+
+    try {
+      // 1. Upload user's image to Pinata
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      
+      const uploadRes = await fetch('/api/upload-file', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error('Failed to upload image');
+      }
+
+      const { ipfsUrl: imageIpfsUrl } = await uploadRes.json();
+      setMintedBadgeUrl(imageIpfsUrl);
+      
+      // 2. Generate metadata for custom badge
+      const metadata = {
+        name: eventName,
+        description: description || `Custom badge for ${eventName}`,
+        image: imageIpfsUrl,
+        attributes: [
+          { trait_type: 'Type', value: 'Custom' },
+          { trait_type: 'Creator', value: address },
+          { trait_type: 'Uploaded', value: new Date().toISOString() },
+        ],
+      };
+      
+      // 3. Upload metadata to Pinata
+      const metadataIpfsUrl = await uploadToPinata(metadata, `${eventName}-custom-metadata.json`);
+      
+      // 4. Mint NFT with metadata URI
+      writeContract({
+        address: contractAddress,
+        abi: VIBEBADGE_ABI,
+        functionName: 'mintBadge',
+        args: [address, metadataIpfsUrl],
+        value: totalCost,
+      });
+    } catch (err: any) {
+      console.error('Upload/Mint error:', err);
+      setUploadError(err.message || 'Failed to upload badge to IPFS');
+      setIsUploading(false);
+    }
+  };
 
   const handleMint = async () => {
     if (!address || !contractAddress || !totalCost || !eventName.trim()) return;
@@ -169,6 +276,13 @@ export default function MintPage() {
           </p>
           
           <div className="flex flex-col gap-3 max-w-md mx-auto px-4">
+            <button
+              onClick={handleShare}
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-semibold py-3 px-6 rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2"
+            >
+              <span className="text-xl">🔗</span>
+              <span>{shareSuccess ? 'Shared!' : 'Share My Badge'}</span>
+            </button>
             {mintedBadgeUrl && (
               <a
                 href={mintedBadgeUrl}
@@ -196,6 +310,7 @@ export default function MintPage() {
                 setMintedBadgeUrl('');
                 setMintedLevel(null);
                 setUploadError(null);
+                setShareSuccess(false);
                 window.location.reload();
               }}
               className="mobile-button bg-gray-800 text-gray-300 border-2 border-gray-700 hover:bg-gray-700"
@@ -294,48 +409,137 @@ export default function MintPage() {
           </div>
         ) : (
           <div className="mobile-card max-w-2xl mx-auto animate-fade-in">
+            {/* Mode Selector Tabs */}
+            <div className="flex gap-2 mb-6 bg-gray-800 p-1 rounded-lg">
+              <button
+                onClick={() => setMintMode('auto')}
+                className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all ${
+                  mintMode === 'auto'
+                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
+                    : 'text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                <span className="text-xl mr-2">🎲</span>
+                Auto Generate
+              </button>
+              <button
+                onClick={() => setMintMode('manual')}
+                className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all ${
+                  mintMode === 'manual'
+                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
+                    : 'text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                <span className="text-xl mr-2">📤</span>
+                Upload Custom
+              </button>
+            </div>
+
             <div className="mb-6">
               <label className="block text-sm font-semibold text-purple-400 mb-3">
-                Event Name
+                {mintMode === 'auto' ? 'Event Name' : 'Badge Name'}
               </label>
               <input
                 type="text"
                 value={eventName}
                 onChange={(e) => setEventName(e.target.value)}
-                placeholder="e.g., Web3 Summit 2025"
+                placeholder={mintMode === 'auto' ? 'e.g., Web3 Summit 2025' : 'e.g., My Custom Badge'}
                 className="w-full px-4 py-3 border-2 border-gray-700 rounded-xl focus:ring-2 focus:ring-purple-600 focus:border-transparent bg-gray-800 text-white placeholder-gray-500 transition"
               />
-              <p className="mt-3 text-xs text-gray-500">
-                🎲 Badge rarity assigned randomly: Diamond (10%), Gold (30%), Silver (60%)
-              </p>
             </div>
 
-            <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-xl p-6 mb-6 border-2 border-purple-700/50">
-              <div className="text-center mb-4">
-                <div className="text-4xl mb-2">🎲</div>
-                <h3 className="font-bold text-lg text-purple-400">Random Rarity</h3>
-                <p className="text-sm text-gray-400 mt-2">
-                  Your badge will be auto-generated with random rarity!
+            {mintMode === 'manual' && (
+              <>
+                <div className="mb-6">
+                  <label className="block text-sm font-semibold text-purple-400 mb-3">
+                    Description (Optional)
+                  </label>
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Describe your badge..."
+                    rows={3}
+                    className="w-full px-4 py-3 border-2 border-gray-700 rounded-xl focus:ring-2 focus:ring-purple-600 focus:border-transparent bg-gray-800 text-white placeholder-gray-500 transition resize-none"
+                  />
+                </div>
+
+                <div className="mb-6">
+                  <label className="block text-sm font-semibold text-purple-400 mb-3">
+                    Upload Image
+                  </label>
+                  <div className="border-2 border-dashed border-gray-700 rounded-xl p-6 hover:border-purple-500 transition">
+                    {!filePreview ? (
+                      <label className="cursor-pointer block text-center">
+                        <div className="text-6xl mb-4">🖼️</div>
+                        <p className="text-gray-400 mb-2">Click to upload image</p>
+                        <p className="text-xs text-gray-500">PNG, JPG, GIF, WebP or SVG (Max 10MB)</p>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileSelect}
+                          className="hidden"
+                        />
+                      </label>
+                    ) : (
+                      <div className="relative">
+                        <img 
+                          src={filePreview} 
+                          alt="Preview" 
+                          className="w-full h-64 object-contain rounded-lg mb-4"
+                        />
+                        <button
+                          onClick={() => {
+                            setSelectedFile(null);
+                            setFilePreview(null);
+                          }}
+                          className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded-lg text-sm font-semibold transition"
+                        >
+                          Remove
+                        </button>
+                        <p className="text-sm text-gray-400 text-center">
+                          {selectedFile?.name} ({(selectedFile!.size / 1024 / 1024).toFixed(2)} MB)
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {mintMode === 'auto' && (
+              <>
+                <p className="mt-3 text-xs text-gray-500 mb-6">
+                  🎲 Badge rarity assigned randomly: Diamond (10%), Gold (30%), Silver (60%)
                 </p>
-              </div>
-              <div className="grid grid-cols-3 gap-3 mt-4">
-                <div className="bg-gray-800 rounded-lg p-3 text-center border border-gray-700">
-                  <div className="text-2xl mb-1">💎</div>
-                  <div className="font-bold text-blue-400 text-sm">Diamond</div>
-                  <div className="text-xs text-gray-500">10%</div>
+
+                <div className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 rounded-xl p-6 mb-6 border-2 border-purple-700/50">
+                  <div className="text-center mb-4">
+                    <div className="text-4xl mb-2">🎲</div>
+                    <h3 className="font-bold text-lg text-purple-400">Random Rarity</h3>
+                    <p className="text-sm text-gray-400 mt-2">
+                      Your badge will be auto-generated with random rarity!
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3 mt-4">
+                    <div className="bg-gray-800 rounded-lg p-3 text-center border border-gray-700">
+                      <div className="text-2xl mb-1">💎</div>
+                      <div className="font-bold text-blue-400 text-sm">Diamond</div>
+                      <div className="text-xs text-gray-500">10%</div>
+                    </div>
+                    <div className="bg-gray-800 rounded-lg p-3 text-center border border-gray-700">
+                      <div className="text-2xl mb-1">🥇</div>
+                      <div className="font-bold text-yellow-500 text-sm">Gold</div>
+                      <div className="text-xs text-gray-500">30%</div>
+                    </div>
+                    <div className="bg-gray-800 rounded-lg p-3 text-center border border-gray-700">
+                      <div className="text-2xl mb-1">🥈</div>
+                      <div className="font-bold text-gray-400 text-sm">Silver</div>
+                      <div className="text-xs text-gray-500">60%</div>
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-gray-800 rounded-lg p-3 text-center border border-gray-700">
-                  <div className="text-2xl mb-1">🥇</div>
-                  <div className="font-bold text-yellow-500 text-sm">Gold</div>
-                  <div className="text-xs text-gray-500">30%</div>
-                </div>
-                <div className="bg-gray-800 rounded-lg p-3 text-center border border-gray-700">
-                  <div className="text-2xl mb-1">🥈</div>
-                  <div className="font-bold text-gray-400 text-sm">Silver</div>
-                  <div className="text-xs text-gray-500">60%</div>
-                </div>
-              </div>
-            </div>
+              </>
+            )}
 
             <div className="bg-gray-800 rounded-xl p-6 mb-6 border border-gray-700">
               <h3 className="font-semibold mb-4 text-purple-400">💰 Cost Breakdown</h3>
@@ -386,15 +590,25 @@ export default function MintPage() {
             )}
 
             <button
-              onClick={handleMint}
-              disabled={!eventName.trim() || isPending || isConfirming || isUploading}
+              onClick={mintMode === 'auto' ? handleMint : handleManualMint}
+              disabled={
+                !eventName.trim() || 
+                isPending || 
+                isConfirming || 
+                isUploading ||
+                (mintMode === 'manual' && !selectedFile)
+              }
               className="mobile-button-primary w-full text-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isUploading ? '📤 Uploading...' : isPending || isConfirming ? '⏳ Minting...' : '✨ Generate & Mint Badge'}
+              {isUploading ? '📤 Uploading...' : 
+               isPending || isConfirming ? '⏳ Minting...' : 
+               mintMode === 'auto' ? '✨ Generate & Mint Badge' : '🚀 Upload & Mint Badge'}
             </button>
 
             <p className="mt-4 text-xs text-center text-gray-500">
-              🎨 Your badge will be randomly generated and uploaded to IPFS
+              {mintMode === 'auto' 
+                ? '🎨 Your badge will be randomly generated and uploaded to IPFS' 
+                : '📤 Upload your own artwork to mint as an NFT badge'}
             </p>
           </div>
         )}

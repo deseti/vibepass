@@ -5,15 +5,17 @@ import { useReadContract, useChainId, useAccount, useConnect } from 'wagmi';
 import { CONTRACTS, VIBEBADGE_ABI, DEV_ADDRESS } from '@/lib/contracts';
 import { formatEther } from 'viem';
 import { useMiniAppContext } from '@/hooks/useMiniAppContext';
+import { useState } from 'react';
 
 export default function StatsPage() {
-  const { isConnected } = useAccount();
+  const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
   const { isMiniApp } = useMiniAppContext();
   const chainId = useChainId();
   const contractAddress = CONTRACTS[8453]?.address;
   const explorerUrl = CONTRACTS[8453]?.explorer;
   const networkName = 'Base Mainnet';
+  const [shareSuccess, setShareSuccess] = useState(false);
 
   const { data: mintPrice } = useReadContract({
     address: contractAddress,
@@ -33,13 +35,64 @@ export default function StatsPage() {
     functionName: 'getNextTokenId',
   });
 
+  // User-specific stats
+  const { data: userBalance } = useReadContract({
+    address: contractAddress,
+    abi: VIBEBADGE_ABI,
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
+  });
+
+  const { data: checkInStats } = useReadContract({
+    address: contractAddress,
+    abi: VIBEBADGE_ABI,
+    functionName: 'getCheckInStats',
+    args: address ? [address] : undefined,
+  });
+
   const totalMinted = nextTokenId ? Number(nextTokenId) - 1 : 0;
-  const totalFeesCollected = mintPrice && nextTokenId 
-    ? (BigInt(mintPrice) * 3n / 100n) * BigInt(Math.max(0, Number(nextTokenId) - 1))
-    : 0n;
-  const totalRevenue = totalCost && nextTokenId
-    ? BigInt(totalCost) * BigInt(Math.max(0, Number(nextTokenId) - 1))
-    : 0n;
+  const userMints = userBalance ? Number(userBalance) : 0;
+  const checkInStreak = checkInStats?.[1] ? Number(checkInStats[1]) : 0;
+  const totalCheckIns = checkInStats?.[2] ? Number(checkInStats[2]) : 0;
+
+  // Calculate user level and rank
+  const totalActivity = userMints + totalCheckIns;
+  const getUserLevel = () => {
+    if (totalActivity >= 100) return { level: 10, name: '🏆 Legend', color: 'from-yellow-400 to-orange-500' };
+    if (totalActivity >= 50) return { level: 9, name: '💎 Diamond', color: 'from-blue-400 to-cyan-500' };
+    if (totalActivity >= 30) return { level: 8, name: '👑 Platinum', color: 'from-purple-400 to-pink-500' };
+    if (totalActivity >= 20) return { level: 7, name: '🥇 Gold', color: 'from-yellow-400 to-yellow-600' };
+    if (totalActivity >= 15) return { level: 6, name: '🥈 Silver', color: 'from-gray-300 to-gray-500' };
+    if (totalActivity >= 10) return { level: 5, name: '🥉 Bronze', color: 'from-orange-400 to-orange-600' };
+    if (totalActivity >= 7) return { level: 4, name: '⭐ Rising Star', color: 'from-green-400 to-emerald-500' };
+    if (totalActivity >= 5) return { level: 3, name: '🌟 Active', color: 'from-blue-400 to-blue-600' };
+    if (totalActivity >= 3) return { level: 2, name: '🔰 Beginner', color: 'from-purple-400 to-purple-600' };
+    if (totalActivity >= 1) return { level: 1, name: '🆕 Newbie', color: 'from-gray-400 to-gray-600' };
+    return { level: 0, name: '👤 Guest', color: 'from-gray-500 to-gray-700' };
+  };
+
+  const userLevel = getUserLevel();
+  const nextLevelActivity = [1, 3, 5, 7, 10, 15, 20, 30, 50, 100][userLevel.level] || 100;
+  const progressToNextLevel = userLevel.level >= 10 ? 100 : ((totalActivity % nextLevelActivity) / nextLevelActivity) * 100;
+
+  const handleShare = () => {
+    const text = `🎫 My VibeBadge Stats!\n\n${userLevel.name} (Level ${userLevel.level})\n📊 Total Activity: ${totalActivity}\n🎨 Badges Minted: ${userMints}\n🔥 Check-in Streak: ${checkInStreak} days\n✅ Total Check-ins: ${totalCheckIns}\n\nJoin me on VibeBadge! 🚀`;
+    const url = 'https://app.vibepas.xyz';
+    
+    // Check if Farcaster context is available
+    if (typeof window !== 'undefined' && (window as any).farcaster) {
+      (window as any).farcaster.share({
+        text,
+        embeds: [url],
+      });
+    } else {
+      // Fallback to Warpcast intent
+      const warpcastUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(text)}&embeds[]=${encodeURIComponent(url)}`;
+      window.open(warpcastUrl, '_blank');
+    }
+    setShareSuccess(true);
+    setTimeout(() => setShareSuccess(false), 3000);
+  };
 
   return (
     <div className="min-h-screen bg-black pb-20 sm:pb-0">
@@ -75,134 +128,155 @@ export default function StatsPage() {
       </nav>
 
       <div className="mobile-container py-8 sm:py-12 animate-fade-in">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-purple-400">📊 Contract Statistics</h1>
+        <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-purple-400">📊 My Activity Stats</h1>
 
-        {/* Main Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
-          <div className="mobile-card text-center p-4 sm:p-6">
-            <div className="text-xs sm:text-sm text-gray-500 mb-2">Total Badges</div>
-            <div className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
-              {totalMinted}
-            </div>
-          </div>
-          
-          <div className="mobile-card text-center p-4 sm:p-6">
-            <div className="text-xs sm:text-sm text-gray-500 mb-2">Mint Price</div>
-            <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
-              {mintPrice ? formatEther(mintPrice) : '0.001'}
-            </div>
-            <div className="text-xs text-gray-500 mt-1">ETH</div>
-          </div>
-          
-          <div className="mobile-card text-center p-4 sm:p-6">
-            <div className="text-xs sm:text-sm text-gray-500 mb-2">Total Cost</div>
-            <div className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-green-400 to-purple-600 bg-clip-text text-transparent">
-              {totalCost ? formatEther(totalCost) : '0.00103'}
-            </div>
-            <div className="text-xs text-gray-500 mt-1">ETH</div>
-          </div>
-          
-          <div className="mobile-card text-center p-4 sm:p-6">
-            <div className="text-xs sm:text-sm text-gray-500 mb-2">System Fee</div>
-            <div className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-orange-400 to-purple-600 bg-clip-text text-transparent">
-              3%
-            </div>
-            <div className="text-xs text-gray-500 mt-1">per mint</div>
-          </div>
-        </div>
-
-        {/* Revenue Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          <div className="mobile-card p-4 sm:p-6">
-            <div className="text-xs sm:text-sm text-gray-500 mb-2">💰 Total Revenue</div>
-            <div className="text-2xl sm:text-3xl font-bold text-purple-400">
-              {formatEther(totalRevenue)} ETH
-            </div>
-            <div className="text-xs text-gray-500 mt-2">
-              All payments to dev
-            </div>
-          </div>
-          
-          <div className="mobile-card p-4 sm:p-6">
-            <div className="text-xs sm:text-sm text-gray-500 mb-2">💸 Total Fees</div>
-            <div className="text-2xl sm:text-3xl font-bold text-green-400">
-              {formatEther(totalFeesCollected)} ETH
-            </div>
-            <div className="text-xs text-gray-500 mt-2">
-              3% × {totalMinted} mints
-            </div>
-          </div>
-        </div>
-
-        {/* Network Info */}
-        <div className="mobile-card mb-6 sm:mb-8 p-4 sm:p-6">
-          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-purple-400">🌐 Network Info</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-            <div>
-              <div className="text-xs text-gray-500 mb-2">Current Network</div>
-              <div className="text-base sm:text-lg font-semibold text-gray-300">{networkName}</div>
-              <div className="text-xs text-gray-500 mt-1">Chain ID: {chainId}</div>
-            </div>
-            <div>
-              <div className="text-xs text-gray-500 mb-2">Contract Address</div>
-              <code className="text-xs bg-gray-800 px-2 py-1 rounded block overflow-x-auto text-purple-400">
-                {contractAddress}
-              </code>
-              <a
-                href={`${explorerUrl}/address/${contractAddress}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-purple-400 hover:text-purple-300 mt-2 inline-block transition"
-              >
-                View on BaseScan →
-              </a>
-            </div>
-          </div>
-        </div>
-
-        {/* Dev Address */}
-        <div className="mobile-card mb-6 sm:mb-8 p-4 sm:p-6">
-          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-purple-400">💳 Payment Destination</h2>
-          <div>
-            <div className="text-xs text-gray-500 mb-2">Dev Address (receives 100%)</div>
-            <code className="text-xs bg-gray-800 px-2 py-1 rounded block overflow-x-auto mb-3 text-purple-400">
-              {DEV_ADDRESS}
-            </code>
-            <p className="text-xs sm:text-sm text-gray-400 mb-3">
-              All mint payments (base + 3% fee) go directly to this address. No funds held by contract.
-            </p>
-            <a
-              href={`${explorerUrl}/address/${DEV_ADDRESS}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-purple-400 hover:text-purple-300 transition inline-block"
+        {!isConnected ? (
+          <div className="mobile-card p-8 text-center mb-8">
+            <div className="text-6xl mb-4">🔌</div>
+            <h2 className="text-xl font-bold mb-2 text-gray-300">Connect Your Wallet</h2>
+            <p className="text-gray-400 mb-6">Connect to view your activity stats and level</p>
+            <button
+              onClick={() => connectors.length > 0 && connect({ connector: connectors[0] })}
+              className="mobile-button-primary"
             >
-              View Dev Address →
-            </a>
+              Connect Wallet
+            </button>
           </div>
-        </div>
+        ) : (
+          <>
+            {/* User Level Card */}
+            <div className="mobile-card p-6 sm:p-8 mb-6 relative overflow-hidden">
+              <div className={`absolute inset-0 bg-gradient-to-br ${userLevel.color} opacity-10`}></div>
+              <div className="relative z-10">
+                <div className="text-center mb-6">
+                  <div className="text-6xl sm:text-7xl mb-4">{userLevel.name.split(' ')[0]}</div>
+                  <h2 className={`text-2xl sm:text-3xl font-bold bg-gradient-to-r ${userLevel.color} bg-clip-text text-transparent mb-2`}>
+                    {userLevel.name}
+                  </h2>
+                  <div className="text-4xl sm:text-5xl font-bold text-purple-400">Level {userLevel.level}</div>
+                </div>
 
-        {/* Rarity Distribution */}
-        <div className="mobile-card p-4 sm:p-6 mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-purple-400">🎲 Rarity Distribution</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-            <div className="bg-gradient-to-br from-blue-900/30 to-blue-800/30 rounded-xl p-4 sm:p-6 text-center border-2 border-blue-700/50 hover:border-blue-600 transition-all">
-              <div className="text-3xl sm:text-4xl mb-2">💎</div>
-              <div className="font-bold text-base sm:text-xl text-blue-400">Diamond</div>
-              <div className="text-xs text-gray-400 mt-2">Legendary Rarity</div>
-              <div className="text-xl sm:text-2xl font-bold mt-2 text-blue-400">10%</div>
+                {/* Progress Bar */}
+                {userLevel.level < 10 && (
+                  <div className="mb-4">
+                    <div className="flex justify-between text-xs text-gray-400 mb-2">
+                      <span>Progress to Level {userLevel.level + 1}</span>
+                      <span>{Math.floor(progressToNextLevel)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
+                      <div 
+                        className={`h-full bg-gradient-to-r ${userLevel.color} transition-all duration-500`}
+                        style={{ width: `${progressToNextLevel}%` }}
+                      ></div>
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1 text-center">
+                      {totalActivity} / {nextLevelActivity} activities
+                    </div>
+                  </div>
+                )}
+
+                {/* Share Button */}
+                <button
+                  onClick={handleShare}
+                  className="w-full mt-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-semibold py-3 px-6 rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <span className="text-xl">🔗</span>
+                  <span>{shareSuccess ? 'Shared!' : 'Share My Stats'}</span>
+                </button>
+              </div>
             </div>
-            <div className="bg-gradient-to-br from-yellow-900/30 to-yellow-800/30 rounded-xl p-4 sm:p-6 text-center border-2 border-yellow-700/50 hover:border-yellow-600 transition-all">
-              <div className="text-3xl sm:text-4xl mb-2">🥇</div>
-              <div className="font-bold text-base sm:text-xl text-yellow-400">Gold</div>
-              <div className="text-xs text-gray-400 mt-2">Rare</div>
-              <div className="text-xl sm:text-2xl font-bold mt-2 text-yellow-400">30%</div>
+
+            {/* Activity Stats Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
+              <div className="mobile-card p-4 text-center">
+                <div className="text-3xl mb-2">🎨</div>
+                <div className="text-2xl font-bold text-purple-400">{userMints}</div>
+                <div className="text-xs text-gray-500 mt-1">Badges Minted</div>
+              </div>
+
+              <div className="mobile-card p-4 text-center">
+                <div className="text-3xl mb-2">�</div>
+                <div className="text-2xl font-bold text-orange-400">{checkInStreak}</div>
+                <div className="text-xs text-gray-500 mt-1">Day Streak</div>
+              </div>
+
+              <div className="mobile-card p-4 text-center">
+                <div className="text-3xl mb-2">✅</div>
+                <div className="text-2xl font-bold text-green-400">{totalCheckIns}</div>
+                <div className="text-xs text-gray-500 mt-1">Total Check-ins</div>
+              </div>
+
+              <div className="mobile-card p-4 text-center">
+                <div className="text-3xl mb-2">📊</div>
+                <div className="text-2xl font-bold text-blue-400">{totalActivity}</div>
+                <div className="text-xs text-gray-500 mt-1">Total Activity</div>
+              </div>
             </div>
-            <div className="bg-gradient-to-br from-gray-800/30 to-gray-700/30 rounded-xl p-4 sm:p-6 text-center border-2 border-gray-600/50 hover:border-gray-500 transition-all">
-              <div className="text-3xl sm:text-4xl mb-2">🥈</div>
-              <div className="font-bold text-base sm:text-xl text-gray-400">Silver</div>
-              <div className="text-xs text-gray-400 mt-2">Common</div>
-              <div className="text-xl sm:text-2xl font-bold mt-2 text-gray-400">60%</div>
+
+            {/* Level System Info */}
+            <div className="mobile-card p-6 mb-6">
+              <h3 className="text-xl font-bold mb-4 text-purple-400">🏆 Level System</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between items-center py-2 border-b border-gray-800">
+                  <span className="text-gray-400">👤 Guest</span>
+                  <span className="text-gray-500">Level 0 (0 activities)</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-800">
+                  <span className="text-gray-400">🆕 Newbie</span>
+                  <span className="text-gray-500">Level 1 (1+ activities)</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-800">
+                  <span className="text-gray-400">� Beginner</span>
+                  <span className="text-gray-500">Level 2 (3+ activities)</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-800">
+                  <span className="text-gray-400">🌟 Active</span>
+                  <span className="text-gray-500">Level 3 (5+ activities)</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-800">
+                  <span className="text-gray-400">⭐ Rising Star</span>
+                  <span className="text-gray-500">Level 4 (7+ activities)</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-800">
+                  <span className="text-gray-400">🥉 Bronze</span>
+                  <span className="text-gray-500">Level 5 (10+ activities)</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-800">
+                  <span className="text-gray-400">🥈 Silver</span>
+                  <span className="text-gray-500">Level 6 (15+ activities)</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-800">
+                  <span className="text-gray-400">🥇 Gold</span>
+                  <span className="text-gray-500">Level 7 (20+ activities)</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-800">
+                  <span className="text-gray-400">👑 Platinum</span>
+                  <span className="text-gray-500">Level 8 (30+ activities)</span>
+                </div>
+                <div className="flex justify-between items-center py-2 border-b border-gray-800">
+                  <span className="text-gray-400">💎 Diamond</span>
+                  <span className="text-gray-500">Level 9 (50+ activities)</span>
+                </div>
+                <div className="flex justify-between items-center py-2">
+                  <span className="text-gray-400">🏆 Legend</span>
+                  <span className="text-gray-500">Level 10 (100+ activities)</span>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Global Stats */}
+        <div className="mobile-card p-6 mb-6">
+          <h3 className="text-xl font-bold mb-4 text-purple-400">🌐 Global Statistics</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-purple-400">{totalMinted}</div>
+              <div className="text-xs text-gray-500 mt-1">Total Badges</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-blue-400">{mintPrice ? formatEther(mintPrice) : '0.001'}</div>
+              <div className="text-xs text-gray-500 mt-1">Mint Price (ETH)</div>
             </div>
           </div>
         </div>
