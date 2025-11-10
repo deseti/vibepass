@@ -78,7 +78,7 @@ export async function uploadSVGToPinata(svg: string, filename: string): Promise<
 
 export function ipfsToHttps(ipfsUrl: string): string {
   if (ipfsUrl.startsWith('ipfs://')) {
-    return ipfsUrl.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/');
+    return ipfsUrl.replace('ipfs://', 'https://harlequin-adjacent-gull-459.mypinata.cloud/ipfs/');
   }
   return ipfsUrl;
 }

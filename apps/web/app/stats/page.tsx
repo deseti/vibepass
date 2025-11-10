@@ -334,59 +334,7 @@ export default function StatsPage() {
                   </a>
                 </div>
               )}
-            </div>
-
-            {/* Level System Info */}
-            <div className="mobile-card p-6 mb-6">
-              <h3 className="text-xl font-bold mb-4 text-purple-400">🏆 Level System</h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between items-center py-2 border-b border-gray-800">
-                  <span className="text-gray-400">👤 Guest</span>
-                  <span className="text-gray-500">Level 0 (0 activities)</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-800">
-                  <span className="text-gray-400">🆕 Newbie</span>
-                  <span className="text-gray-500">Level 1 (1+ activities)</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-800">
-                  <span className="text-gray-400">� Beginner</span>
-                  <span className="text-gray-500">Level 2 (3+ activities)</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-800">
-                  <span className="text-gray-400">🌟 Active</span>
-                  <span className="text-gray-500">Level 3 (5+ activities)</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-800">
-                  <span className="text-gray-400">⭐ Rising Star</span>
-                  <span className="text-gray-500">Level 4 (7+ activities)</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-800">
-                  <span className="text-gray-400">🥉 Bronze</span>
-                  <span className="text-gray-500">Level 5 (10+ activities)</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-800">
-                  <span className="text-gray-400">🥈 Silver</span>
-                  <span className="text-gray-500">Level 6 (15+ activities)</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-800">
-                  <span className="text-gray-400">🥇 Gold</span>
-                  <span className="text-gray-500">Level 7 (20+ activities)</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-800">
-                  <span className="text-gray-400">👑 Platinum</span>
-                  <span className="text-gray-500">Level 8 (30+ activities)</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-800">
-                  <span className="text-gray-400">💎 Diamond</span>
-                  <span className="text-gray-500">Level 9 (50+ activities)</span>
-                </div>
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-gray-400">🏆 Legend</span>
-                  <span className="text-gray-500">Level 10 (100+ activities)</span>
-                </div>
-              </div>
-            </div>
-          </>
+            </div> </>
         )}
 
         {/* Global Stats */}
