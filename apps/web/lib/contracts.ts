@@ -54,6 +54,55 @@ export const VIBEBADGE_ABI = [
     stateMutability: 'view',
     type: 'function',
   },
+  // Daily Check-In Functions
+  {
+    inputs: [],
+    name: 'checkIn',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'address', name: 'user', type: 'address' }],
+    name: 'canCheckInToday',
+    outputs: [{ internalType: 'bool', name: '', type: 'bool' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'address', name: 'user', type: 'address' }],
+    name: 'getCheckInStats',
+    outputs: [
+      { internalType: 'uint256', name: 'lastCheckInTime', type: 'uint256' },
+      { internalType: 'uint256', name: 'streak', type: 'uint256' },
+      { internalType: 'uint256', name: 'total', type: 'uint256' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  // Withdraw Functions (Owner Only)
+  {
+    inputs: [],
+    name: 'withdraw',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'getContractBalance',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'owner',
+    outputs: [{ internalType: 'address', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  // Events
   {
     anonymous: false,
     inputs: [
@@ -62,6 +111,25 @@ export const VIBEBADGE_ABI = [
       { indexed: false, internalType: 'string', name: 'tokenURI', type: 'string' },
     ],
     name: 'BadgeMinted',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'address', name: 'user', type: 'address' },
+      { indexed: false, internalType: 'uint256', name: 'timestamp', type: 'uint256' },
+      { indexed: false, internalType: 'uint256', name: 'streak', type: 'uint256' },
+    ],
+    name: 'CheckedIn',
+    type: 'event',
+  },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: 'address', name: 'dev', type: 'address' },
+      { indexed: false, internalType: 'uint256', name: 'amount', type: 'uint256' },
+    ],
+    name: 'FundsWithdrawn',
     type: 'event',
   },
 ] as const;

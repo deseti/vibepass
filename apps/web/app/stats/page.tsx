@@ -217,7 +217,7 @@ export default function StatsPage() {
 
       {/* Mobile Navigation Bar */}
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-lg border-t border-gray-800 z-50">
-        <div className="grid grid-cols-3 gap-1 p-2">
+        <div className="grid grid-cols-4 gap-1 p-2">
           <Link href="/mint" className="flex flex-col items-center py-3 text-gray-400 hover:text-purple-400 transition">
             <span className="text-2xl mb-1">🎨</span>
             <span className="text-xs">Mint</span>
@@ -225,6 +225,10 @@ export default function StatsPage() {
           <Link href="/badges" className="flex flex-col items-center py-3 text-gray-400 hover:text-purple-400 transition">
             <span className="text-2xl mb-1">🎫</span>
             <span className="text-xs">Badges</span>
+          </Link>
+          <Link href="/checkin" className="flex flex-col items-center py-3 text-gray-400 hover:text-purple-400 transition">
+            <span className="text-2xl mb-1">📅</span>
+            <span className="text-xs">Check-In</span>
           </Link>
           <Link href="/stats" className="flex flex-col items-center py-3 text-purple-400 font-medium">
             <span className="text-2xl mb-1">📊</span>
