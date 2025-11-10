@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useAccount, useConnect, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useConnect, useDisconnect, useReadContract, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { CONTRACTS, VIBEBADGE_ABI, DEV_ADDRESS } from '@/lib/contracts';
 import { formatEther } from 'viem';
 import { useMiniAppContext } from '@/hooks/useMiniAppContext';
@@ -10,7 +10,9 @@ import { useMiniAppContext } from '@/hooks/useMiniAppContext';
 export default function AdminPage() {
   const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
+  const { disconnect } = useDisconnect();
   const { isMiniApp } = useMiniAppContext();
+  const [showConnectors, setShowConnectors] = useState(false);
   
   const contractAddress = CONTRACTS[8453]?.address;
   const isOwner = address?.toLowerCase() === DEV_ADDRESS.toLowerCase();
@@ -83,12 +85,55 @@ export default function AdminPage() {
               </div>
             </div>
             {!isMiniApp && (
-              <button
-                onClick={() => connectors.length > 0 && connect({ connector: connectors[0] })}
-                className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition active:scale-95"
-              >
-                {isConnected ? '🟢 Connected' : 'Connect'}
-              </button>
+              <div className="relative">
+                {isConnected ? (
+                  <div className="flex items-center gap-2">
+                    <div className="hidden sm:block text-xs text-gray-400">
+                      {address?.substring(0, 6)}...{address?.substring(address.length - 4)}
+                    </div>
+                    <button
+                      onClick={() => disconnect()}
+                      className="px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition active:scale-95"
+                    >
+                      Disconnect
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => setShowConnectors(!showConnectors)}
+                      className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition active:scale-95"
+                    >
+                      Connect Wallet
+                    </button>
+                    
+                    {showConnectors && (
+                      <div className="absolute right-0 mt-2 w-64 bg-gray-800 border border-gray-700 rounded-lg shadow-2xl z-50 p-2">
+                        <div className="text-xs text-gray-400 px-3 py-2 font-semibold">Select Wallet</div>
+                        {connectors.map((connector) => (
+                          <button
+                            key={connector.id}
+                            onClick={() => {
+                              connect({ connector });
+                              setShowConnectors(false);
+                            }}
+                            className="w-full text-left px-3 py-3 hover:bg-gray-700 rounded-lg transition flex items-center gap-3"
+                          >
+                            <span className="text-2xl">
+                              {connector.name.toLowerCase().includes('coinbase') ? '🔵' : 
+                               connector.name.toLowerCase().includes('farcaster') ? '💜' : '🦊'}
+                            </span>
+                            <div>
+                              <div className="text-white text-sm font-medium">{connector.name}</div>
+                              <div className="text-gray-400 text-xs">{connector.id}</div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
             )}
           </div>
         </div>
@@ -102,15 +147,25 @@ export default function AdminPage() {
             <div className="text-6xl mb-6">🔌</div>
             <h2 className="text-2xl font-bold mb-4 text-purple-400">Connect Wallet</h2>
             <p className="text-gray-400 mb-8 text-sm">
-              Connect your wallet to access admin panel
+              Connect your dev wallet to access admin panel
             </p>
             {!isMiniApp && (
-              <button
-                onClick={() => connectors.length > 0 && connect({ connector: connectors[0] })}
-                className="mobile-button-primary w-full"
-              >
-                Connect Wallet
-              </button>
+              <div className="space-y-3">
+                <div className="text-xs text-gray-500 mb-4">Choose your wallet:</div>
+                {connectors.map((connector) => (
+                  <button
+                    key={connector.id}
+                    onClick={() => connect({ connector })}
+                    className="w-full px-6 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition active:scale-95 flex items-center justify-center gap-3"
+                  >
+                    <span className="text-2xl">
+                      {connector.name.toLowerCase().includes('coinbase') ? '🔵' : 
+                       connector.name.toLowerCase().includes('farcaster') ? '💜' : '🦊'}
+                    </span>
+                    <span>{connector.name}</span>
+                  </button>
+                ))}
+              </div>
             )}
           </div>
         ) : !isOwner ? (
@@ -205,9 +260,17 @@ export default function AdminPage() {
             </div>
 
             {/* Info Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
               <div className="mobile-card p-6">
-                <h4 className="font-bold mb-3 text-purple-400 text-sm">👤 Owner Address</h4>
+                <h4 className="font-bold mb-3 text-purple-400 text-sm">� Connected Wallet</h4>
+                <code className="text-xs bg-gray-800 px-2 py-1 rounded block overflow-x-auto text-blue-400 mb-2">
+                  {address}
+                </code>
+                <div className="text-xs text-green-400 mt-2">✅ Owner Verified</div>
+              </div>
+
+              <div className="mobile-card p-6">
+                <h4 className="font-bold mb-3 text-purple-400 text-sm">👤 Contract Owner</h4>
                 <code className="text-xs bg-gray-800 px-2 py-1 rounded block overflow-x-auto text-green-400">
                   {ownerAddress as string}
                 </code>
@@ -218,6 +281,31 @@ export default function AdminPage() {
                 <code className="text-xs bg-gray-800 px-2 py-1 rounded block overflow-x-auto text-purple-400">
                   {contractAddress}
                 </code>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="mobile-card p-6 mb-6">
+              <h4 className="font-bold mb-4 text-purple-400 text-sm">🔗 Quick Links</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <a
+                  href={`${CONTRACTS[8453].explorer}/address/${contractAddress}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg transition flex items-center justify-between group"
+                >
+                  <span className="text-sm text-white">View Contract on BaseScan</span>
+                  <span className="text-purple-400 group-hover:translate-x-1 transition-transform">→</span>
+                </a>
+                <a
+                  href={`${CONTRACTS[8453].explorer}/address/${address}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-3 bg-gray-800 hover:bg-gray-700 rounded-lg transition flex items-center justify-between group"
+                >
+                  <span className="text-sm text-white">View Your Wallet on BaseScan</span>
+                  <span className="text-purple-400 group-hover:translate-x-1 transition-transform">→</span>
+                </a>
               </div>
             </div>
 
