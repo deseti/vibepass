@@ -110,8 +110,9 @@ export function generateBadgeMetadata(
   
   return {
     name: `${eventName} - ${level} Badge`,
-    description: description || `${level} tier VibeBadge for ${eventName}. Rarity: ${rarityText}`,
+    description: description || `${level} tier VibeBadge for ${eventName}. Rarity: ${rarityText}. Official VibeBadge NFT minted on Base.`,
     image: imageUrl,
+    external_url: 'https://app.vibepas.xyz',
     attributes: [
       {
         trait_type: 'Level',
@@ -128,6 +129,14 @@ export function generateBadgeMetadata(
       {
         trait_type: 'Mint Date',
         value: new Date().toISOString(),
+      },
+      {
+        trait_type: 'Contract',
+        value: 'VibeBadge Official',
+      },
+      {
+        trait_type: 'Network',
+        value: 'Base',
       },
     ],
   };

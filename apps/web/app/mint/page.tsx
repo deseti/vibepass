@@ -156,12 +156,16 @@ export default function MintPage() {
       // 2. Generate metadata for custom badge
       const metadata = {
         name: eventName,
-        description: description || `Custom badge for ${eventName}`,
+        description: description || `Custom badge for ${eventName}. Official VibeBadge NFT minted on Base.`,
         image: imageIpfsUrl,
+        external_url: 'https://app.vibepas.xyz',
         attributes: [
           { trait_type: 'Type', value: 'Custom' },
           { trait_type: 'Creator', value: address },
-          { trait_type: 'Uploaded', value: new Date().toISOString() },
+          { trait_type: 'Event', value: eventName },
+          { trait_type: 'Mint Date', value: new Date().toISOString() },
+          { trait_type: 'Contract', value: 'VibeBadge Official' },
+          { trait_type: 'Network', value: 'Base' },
         ],
       };
       

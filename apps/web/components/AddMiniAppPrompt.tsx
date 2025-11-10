@@ -27,6 +27,8 @@ export default function AddMiniAppPrompt() {
           // Show prompt if app is not added and user hasn't dismissed it before
           if (!isAppAdded && !hasSeenPrompt) {
             setShowPrompt(true);
+            // Add padding to body when prompt is shown
+            document.body.style.paddingTop = '80px';
           }
         } catch (error) {
           console.error('Error checking if app is added:', error);
@@ -35,6 +37,13 @@ export default function AddMiniAppPrompt() {
 
       checkIfAdded();
     }
+
+    // Cleanup function
+    return () => {
+      if (showPrompt) {
+        document.body.style.paddingTop = '0px';
+      }
+    };
   }, [isMiniApp, context]);
 
   const handleAddMiniApp = async () => {
@@ -44,6 +53,7 @@ export default function AddMiniAppPrompt() {
       console.log('✅ Mini app added successfully');
       setIsAdded(true);
       setShowPrompt(false);
+      document.body.style.paddingTop = '0px';
       localStorage.setItem('vibepass_add_miniapp_seen', 'true');
     } catch (error: any) {
       console.error('❌ Failed to add mini app:', error);
@@ -52,6 +62,7 @@ export default function AddMiniAppPrompt() {
         console.log('User rejected adding the mini app');
         // User rejected, hide prompt for this session
         setShowPrompt(false);
+        document.body.style.paddingTop = '0px';
         localStorage.setItem('vibepass_add_miniapp_seen', 'true');
       }
     } finally {
@@ -61,6 +72,7 @@ export default function AddMiniAppPrompt() {
 
   const handleDismiss = () => {
     setShowPrompt(false);
+    document.body.style.paddingTop = '0px';
     // Remember that user has seen and dismissed the prompt
     localStorage.setItem('vibepass_add_miniapp_seen', 'true');
   };
@@ -71,7 +83,7 @@ export default function AddMiniAppPrompt() {
   }
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 p-4 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 text-white shadow-lg animate-slide-down">
+    <div className="fixed top-0 left-0 right-0 z-[100] p-3 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 text-white shadow-xl animate-slide-down">
       <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 flex-1">
           <div className="flex-shrink-0">
