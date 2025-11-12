@@ -119,7 +119,7 @@ export default function MintPage() {
   };
 
   const handleManualMint = async () => {
-    if (!address || !contractAddress || !totalCost || !eventName.trim() || !selectedFile) return;
+    if (!address || !contractAddress || totalCost === undefined || !eventName.trim() || !selectedFile) return;
     
     setIsUploading(true);
     setUploadError(null);
@@ -191,8 +191,13 @@ export default function MintPage() {
   };
 
   const handleMint = async () => {
-    if (!address || !contractAddress || !totalCost || !eventName.trim()) {
-      console.error('❌ Mint failed: missing required fields');
+    if (!address || !contractAddress || totalCost === undefined || !eventName.trim()) {
+      console.error('❌ Mint failed: missing required fields', { 
+        address, 
+        contractAddress, 
+        totalCost, 
+        eventName 
+      });
       return;
     }
     
