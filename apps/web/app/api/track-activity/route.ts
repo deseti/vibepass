@@ -23,70 +23,82 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const addressLower = address.toLowerCase();
+
     // Check if user exists
-    const { data: existingUser } = await supabase
+    const { data: existingUsers, error: checkError } = await supabase
       .from('user_stats')
       .select('*')
-      .eq('address', address.toLowerCase())
-      .single();
+      .eq('address', addressLower);
 
-    if (existingUser) {
+    if (checkError) {
+      console.error('Supabase check error:', checkError);
+      return NextResponse.json(
+        { error: 'Failed to check user', details: checkError },
+        { status: 500 }
+      );
+    }
+
+    if (existingUsers && existingUsers.length > 0) {
       // Update existing user
+      const user = existingUsers[0];
       let updateData: any = {
         lastActive: new Date().toISOString(),
       };
 
       if (actionType === 'mint') {
-        updateData.totalMints = existingUser.totalMints + 1;
+        updateData.totalMints = user.totalMints + 1;
       } else if (actionType === 'checkin') {
-        updateData.totalCheckIns = existingUser.totalCheckIns + 1;
+        updateData.totalCheckIns = user.totalCheckIns + 1;
       }
 
-      const { data, error } = await supabase
+      console.log('Updating user:', addressLower, updateData);
+
+      const { data: updateResult, error: updateError } = await supabase
         .from('user_stats')
         .update(updateData)
-        .eq('address', address.toLowerCase())
-        .select()
-        .single();
+        .eq('address', addressLower)
+        .select();
 
-      if (error) {
-        console.error('Supabase update error:', error);
+      if (updateError) {
+        console.error('Supabase update error:', updateError);
         return NextResponse.json(
-          { error: 'Failed to update user stats' },
+          { error: 'Failed to update user stats', details: updateError },
           { status: 500 }
         );
       }
 
-      return NextResponse.json(data);
+      return NextResponse.json({ success: true, data: updateResult?.[0] });
     } else {
       // Create new user
       let initialData = {
-        address: address.toLowerCase(),
+        address: addressLower,
         totalMints: actionType === 'mint' ? 1 : 0,
         totalCheckIns: actionType === 'checkin' ? 1 : 0,
         lastActive: new Date().toISOString(),
       };
 
-      const { data, error } = await supabase
+      console.log('Creating new user:', initialData);
+
+      const { data: insertResult, error: insertError } = await supabase
         .from('user_stats')
         .insert([initialData])
-        .select()
-        .single();
+        .select();
 
-      if (error) {
-        console.error('Supabase insert error:', error);
+      if (insertError) {
+        console.error('Supabase insert error:', insertError);
         return NextResponse.json(
-          { error: 'Failed to create user stats' },
+          { error: 'Failed to create user stats', details: insertError },
           { status: 500 }
         );
       }
 
-      return NextResponse.json(data);
+      return NextResponse.json({ success: true, data: insertResult?.[0] });
     }
   } catch (error) {
     console.error('Track activity error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: String(error) },
       { status: 500 }
     );
   }
