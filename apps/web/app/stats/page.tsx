@@ -55,32 +55,14 @@ export default function StatsPage() {
   const checkInStreak = checkInStats?.[1] ? Number(checkInStats[1]) : 0;
   const totalCheckIns = checkInStats?.[2] ? Number(checkInStats[2]) : 0;
 
-  // Calculate user level and rank
+  // Calculate total activity for display
   // Each mint = 60% activity, each check-in = 40% activity
   const mintActivity = userMints * 0.6;
   const checkInActivity = totalCheckIns * 0.4;
   const totalActivity = Math.floor(mintActivity + checkInActivity);
-  
-  const getUserLevel = () => {
-    if (totalActivity >= 100) return { level: 10, name: '🏆 Legend', color: 'from-yellow-400 to-orange-500' };
-    if (totalActivity >= 50) return { level: 9, name: '💎 Diamond', color: 'from-blue-400 to-cyan-500' };
-    if (totalActivity >= 30) return { level: 8, name: '👑 Platinum', color: 'from-purple-400 to-pink-500' };
-    if (totalActivity >= 20) return { level: 7, name: '🥇 Gold', color: 'from-yellow-400 to-yellow-600' };
-    if (totalActivity >= 15) return { level: 6, name: '🥈 Silver', color: 'from-gray-300 to-gray-500' };
-    if (totalActivity >= 10) return { level: 5, name: '🥉 Bronze', color: 'from-orange-400 to-orange-600' };
-    if (totalActivity >= 7) return { level: 4, name: '⭐ Rising Star', color: 'from-green-400 to-emerald-500' };
-    if (totalActivity >= 5) return { level: 3, name: '🌟 Active', color: 'from-blue-400 to-blue-600' };
-    if (totalActivity >= 3) return { level: 2, name: '🔰 Beginner', color: 'from-purple-400 to-purple-600' };
-    if (totalActivity >= 1) return { level: 1, name: '🆕 Newbie', color: 'from-gray-400 to-gray-600' };
-    return { level: 0, name: '👤 Guest', color: 'from-gray-500 to-gray-700' };
-  };
-
-  const userLevel = getUserLevel();
-  const nextLevelActivity = [1, 3, 5, 7, 10, 15, 20, 30, 50, 100][userLevel.level] || 100;
-  const progressToNextLevel = userLevel.level >= 10 ? 100 : ((totalActivity % nextLevelActivity) / nextLevelActivity) * 100;
 
   const handleShare = () => {
-    const text = `🎫 My VibeBadge Stats!\n\n${userLevel.name} (Level ${userLevel.level})\n📊 Total Activity: ${totalActivity}\n🎨 Badges Minted: ${userMints}\n🔥 Check-in Streak: ${checkInStreak} days\n✅ Total Check-ins: ${totalCheckIns}\n\nJoin me on VibeBadge! 🚀`;
+    const text = `🎫 My VibeBadge Stats!\n\n📊 Total Activity: ${totalActivity}\n🎨 Badges Minted: ${userMints}\n🔥 Check-in Streak: ${checkInStreak} days\n✅ Total Check-ins: ${totalCheckIns}\n\nJoin me on VibeBadge! 🚀`;
     const url = 'https://app.vibepas.xyz';
     
     // Check if Farcaster context is available
@@ -167,47 +149,88 @@ export default function StatsPage() {
           </div>
         ) : (
           <>
-            {/* User Level Card */}
-            <div className="mobile-card p-6 sm:p-8 mb-6 relative overflow-hidden">
-              <div className={`absolute inset-0 bg-gradient-to-br ${userLevel.color} opacity-10`}></div>
-              <div className="relative z-10">
-                <div className="text-center mb-6">
-                  <div className="text-6xl sm:text-7xl mb-4">{userLevel.name.split(' ')[0]}</div>
-                  <h2 className={`text-2xl sm:text-3xl font-bold bg-gradient-to-r ${userLevel.color} bg-clip-text text-transparent mb-2`}>
-                    {userLevel.name}
-                  </h2>
-                  <div className="text-4xl sm:text-5xl font-bold text-purple-400">Level {userLevel.level}</div>
+            {/* Achievements Section */}
+            <div className="mobile-card p-6 mb-6">
+              <h3 className="text-xl font-bold mb-4 text-purple-400 flex items-center gap-2">
+                <span>🏆</span>
+                <span>My Achievements</span>
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {/* Achievement: First Mint */}
+                <div className={`p-4 rounded-lg border-2 text-center transition ${userMints >= 1 ? 'border-purple-500 bg-purple-900/20' : 'border-gray-700 bg-gray-900/20 opacity-50'}`}>
+                  <div className="text-3xl mb-2">🎨</div>
+                  <div className="text-xs font-semibold text-gray-300">Pioneer</div>
+                  <div className="text-xs text-gray-500 mt-1">First mint</div>
                 </div>
 
-                {/* Progress Bar */}
-                {userLevel.level < 10 && (
-                  <div className="mb-4">
-                    <div className="flex justify-between text-xs text-gray-400 mb-2">
-                      <span>Progress to Level {userLevel.level + 1}</span>
-                      <span>{Math.floor(progressToNextLevel)}%</span>
-                    </div>
-                    <div className="w-full bg-gray-700 rounded-full h-3 overflow-hidden">
-                      <div 
-                        className={`h-full bg-gradient-to-r ${userLevel.color} transition-all duration-500`}
-                        style={{ width: `${progressToNextLevel}%` }}
-                      ></div>
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1 text-center">
-                      {totalActivity} / {nextLevelActivity} activities
-                    </div>
-                  </div>
-                )}
+                {/* Achievement: 5 Mints */}
+                <div className={`p-4 rounded-lg border-2 text-center transition ${userMints >= 5 ? 'border-blue-500 bg-blue-900/20' : 'border-gray-700 bg-gray-900/20 opacity-50'}`}>
+                  <div className="text-3xl mb-2">🎯</div>
+                  <div className="text-xs font-semibold text-gray-300">Collector</div>
+                  <div className="text-xs text-gray-500 mt-1">5 badges</div>
+                </div>
 
-                {/* Share Button */}
-                <button
-                  onClick={handleShare}
-                  className="w-full mt-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-semibold py-3 px-6 rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2"
-                >
-                  <span className="text-xl">🔗</span>
-                  <span>{shareSuccess ? 'Shared!' : 'Share My Stats'}</span>
-                </button>
+                {/* Achievement: 7-day Streak */}
+                <div className={`p-4 rounded-lg border-2 text-center transition ${checkInStreak >= 7 ? 'border-orange-500 bg-orange-900/20' : 'border-gray-700 bg-gray-900/20 opacity-50'}`}>
+                  <div className="text-3xl mb-2">🔥</div>
+                  <div className="text-xs font-semibold text-gray-300">Dedicated</div>
+                  <div className="text-xs text-gray-500 mt-1">7-day streak</div>
+                </div>
+
+                {/* Achievement: 10 Mints */}
+                <div className={`p-4 rounded-lg border-2 text-center transition ${userMints >= 10 ? 'border-yellow-500 bg-yellow-900/20' : 'border-gray-700 bg-gray-900/20 opacity-50'}`}>
+                  <div className="text-3xl mb-2">⭐</div>
+                  <div className="text-xs font-semibold text-gray-300">Enthusiast</div>
+                  <div className="text-xs text-gray-500 mt-1">10 badges</div>
+                </div>
+
+                {/* Achievement: 30-day Streak */}
+                <div className={`p-4 rounded-lg border-2 text-center transition ${checkInStreak >= 30 ? 'border-pink-500 bg-pink-900/20' : 'border-gray-700 bg-gray-900/20 opacity-50'}`}>
+                  <div className="text-3xl mb-2">👑</div>
+                  <div className="text-xs font-semibold text-gray-300">Legend</div>
+                  <div className="text-xs text-gray-500 mt-1">30-day streak</div>
+                </div>
+
+                {/* Achievement: 25 Mints */}
+                <div className={`p-4 rounded-lg border-2 text-center transition ${userMints >= 25 ? 'border-cyan-500 bg-cyan-900/20' : 'border-gray-700 bg-gray-900/20 opacity-50'}`}>
+                  <div className="text-3xl mb-2">💎</div>
+                  <div className="text-xs font-semibold text-gray-300">Master</div>
+                  <div className="text-xs text-gray-500 mt-1">25 badges</div>
+                </div>
               </div>
             </div>
+
+            {/* Top Minters Leaderboard */}
+            <div className="mobile-card p-6 mb-6">
+              <h3 className="text-xl font-bold mb-4 text-purple-400 flex items-center gap-2">
+                <span>🏅</span>
+                <span>Top Minters This Month</span>
+              </h3>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                <div className="flex items-center justify-between p-3 bg-gray-900/50 rounded-lg border border-gray-800">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="text-2xl">🥇</span>
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold text-gray-300 truncate">You</div>
+                      <div className="text-xs text-gray-500">{userMints} badges</div>
+                    </div>
+                  </div>
+                  <div className="text-purple-400 font-bold text-lg flex-shrink-0">#1</div>
+                </div>
+              </div>
+              <div className="text-xs text-gray-500 text-center mt-4">
+                🎯 Mint more badges to rank higher!
+              </div>
+            </div>
+
+            {/* Share Button */}
+            <button
+              onClick={handleShare}
+              className="w-full mb-6 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-semibold py-3 px-6 rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2"
+            >
+              <span className="text-xl">🔗</span>
+              <span>{shareSuccess ? 'Shared!' : 'Share My Achievements'}</span>
+            </button>
 
             {/* Activity Stats Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
