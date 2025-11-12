@@ -70,6 +70,7 @@ export default function CheckInPage() {
     if (isSuccess && address) {
       const trackCheckIn = async () => {
         try {
+          console.log('📊 Tracking check-in for address:', address);
           const response = await fetch('/api/track-activity', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -78,11 +79,14 @@ export default function CheckInPage() {
               actionType: 'checkin',
             }),
           });
+          const data = await response.json();
           if (response.ok) {
-            console.log('✅ Check-in activity tracked');
+            console.log('✅ Check-in activity tracked:', data);
+          } else {
+            console.error('❌ Track check-in failed:', response.status, data);
           }
         } catch (error) {
-          console.error('Failed to track check-in:', error);
+          console.error('❌ Track check-in error:', error);
         }
       };
       trackCheckIn();

@@ -74,6 +74,7 @@ export default function MintPage() {
     if (isSuccess && address) {
       const trackMint = async () => {
         try {
+          console.log('📊 Tracking mint for address:', address);
           const response = await fetch('/api/track-activity', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -82,11 +83,14 @@ export default function MintPage() {
               actionType: 'mint',
             }),
           });
+          const data = await response.json();
           if (response.ok) {
-            console.log('✅ Mint activity tracked');
+            console.log('✅ Mint activity tracked:', data);
+          } else {
+            console.error('❌ Track mint failed:', response.status, data);
           }
         } catch (error) {
-          console.error('Failed to track mint:', error);
+          console.error('❌ Track mint error:', error);
         }
       };
       trackMint();
