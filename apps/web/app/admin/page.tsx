@@ -13,6 +13,7 @@ export default function AdminPage() {
   const { disconnect } = useDisconnect();
   const { isMiniApp } = useMiniAppContext();
   const [showConnectors, setShowConnectors] = useState(false);
+  const [newMintPrice, setNewMintPrice] = useState('');
   
   const contractAddress = CONTRACTS[8453]?.address;
   const isOwner = address?.toLowerCase() === DEV_ADDRESS.toLowerCase();
@@ -22,6 +23,13 @@ export default function AdminPage() {
     address: contractAddress,
     abi: VIBEBADGE_ABI,
     functionName: 'getContractBalance',
+  });
+
+  // Read current mint price
+  const { data: currentMintPrice, refetch: refetchMintPrice } = useReadContract({
+    address: contractAddress,
+    abi: VIBEBADGE_ABI,
+    functionName: 'mintPrice',
   });
 
   // Read owner
@@ -40,9 +48,10 @@ export default function AdminPage() {
       // Refetch balance after successful withdrawal
       setTimeout(() => {
         refetchBalance();
+        refetchMintPrice();
       }, 2000);
     }
-  }, [isSuccess, refetchBalance]);
+  }, [isSuccess, refetchBalance, refetchMintPrice]);
 
   const handleWithdraw = () => {
     if (!contractAddress) return;
@@ -53,7 +62,29 @@ export default function AdminPage() {
     });
   };
 
+  const handleSetMintPrice = () => {
+    if (!contractAddress || !newMintPrice) return;
+    const priceInWei = BigInt(newMintPrice);
+    writeContract({
+      address: contractAddress,
+      abi: VIBEBADGE_ABI,
+      functionName: 'setMintPrice',
+      args: [priceInWei],
+    });
+  };
+
+  const handleSetFree = () => {
+    if (!contractAddress) return;
+    writeContract({
+      address: contractAddress,
+      abi: VIBEBADGE_ABI,
+      functionName: 'setMintPrice',
+      args: [BigInt(0)],
+    });
+  };
+
   const balanceInEth = contractBalance ? formatEther(contractBalance) : '0';
+  const currentPriceInEth = currentMintPrice ? formatEther(currentMintPrice) : '0';
 
   return (
     <div className="min-h-screen bg-black pb-20 sm:pb-0">
@@ -257,6 +288,63 @@ export default function AdminPage() {
                   )}
                 </div>
               )}
+            </div>
+
+            {/* Mint Price Management Section */}
+            <div className="mobile-card p-8 mb-6">
+              <h3 className="font-bold mb-4 text-purple-400 text-center flex items-center justify-center gap-2">
+                <span>💲</span>
+                <span>Mint Price Management</span>
+              </h3>
+              
+              {/* Current Price Display */}
+              <div className="bg-gray-800 rounded-xl p-6 mb-6 text-center">
+                <div className="text-sm text-gray-400 mb-2">Current Mint Price</div>
+                <div className="text-3xl font-bold text-purple-400 mb-1">
+                  {currentPriceInEth} ETH
+                </div>
+                <div className="text-xs text-gray-500">
+                  + 3% fee = {currentMintPrice ? formatEther(currentMintPrice * BigInt(103) / BigInt(100)) : '0'} ETH total
+                </div>
+              </div>
+
+              {/* Quick Action: Set to Free */}
+              <div className="mb-6">
+                <button
+                  onClick={handleSetFree}
+                  disabled={isPending || isConfirming}
+                  className="w-full px-6 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  <span className="text-xl">🎁</span>
+                  <span>Set Mint to FREE (0 ETH)</span>
+                </button>
+                <p className="text-xs text-gray-500 text-center mt-2">
+                  Make badges free to mint (3% fee still applies on future paid features)
+                </p>
+              </div>
+
+              <div className="border-t border-gray-800 pt-6">
+                <div className="text-sm text-gray-400 mb-3">Or set custom price (in wei):</div>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newMintPrice}
+                    onChange={(e) => setNewMintPrice(e.target.value)}
+                    placeholder="Enter price in wei (e.g., 100000000000000 for 0.0001 ETH)"
+                    className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white text-sm focus:outline-none focus:border-purple-500"
+                  />
+                  <button
+                    onClick={handleSetMintPrice}
+                    disabled={isPending || isConfirming || !newMintPrice}
+                    className="px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                  >
+                    Set Price
+                  </button>
+                </div>
+                <div className="text-xs text-gray-500 mt-2">
+                  💡 Tips: 0 = free, 100000000000000 = 0.0001 ETH, 1000000000000000 = 0.001 ETH
+                </div>
+              </div>
             </div>
 
             {/* Info Cards */}

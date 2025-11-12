@@ -102,6 +102,13 @@ export const VIBEBADGE_ABI = [
     stateMutability: 'view',
     type: 'function',
   },
+  {
+    inputs: [{ internalType: 'uint256', name: '_newPrice', type: 'uint256' }],
+    name: 'setMintPrice',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
   // Events
   {
     anonymous: false,
