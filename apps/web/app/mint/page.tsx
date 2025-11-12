@@ -69,6 +69,30 @@ export default function MintPage() {
     }
   }, [isMiniApp, miniAppLoading, isConnected, connectors, connect]);
 
+  // Track mint activity when transaction succeeds
+  useEffect(() => {
+    if (isSuccess && address) {
+      const trackMint = async () => {
+        try {
+          const response = await fetch('/api/track-activity', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              address: address,
+              actionType: 'mint',
+            }),
+          });
+          if (response.ok) {
+            console.log('✅ Mint activity tracked');
+          }
+        } catch (error) {
+          console.error('Failed to track mint:', error);
+        }
+      };
+      trackMint();
+    }
+  }, [isSuccess, address]);
+
   const handleShare = () => {
     const levelEmoji = mintedLevel === 'DIAMOND' ? '💎' : mintedLevel === 'GOLD' ? '🥇' : '🥈';
     const rarity = mintedLevel === 'DIAMOND' ? 'Legendary' : mintedLevel === 'GOLD' ? 'Rare' : 'Common';

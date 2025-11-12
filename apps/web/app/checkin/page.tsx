@@ -65,6 +65,30 @@ export default function CheckInPage() {
     }
   }, [isSuccess, refetchStats, refetchCanCheckIn]);
 
+  // Track check-in activity when transaction succeeds
+  useEffect(() => {
+    if (isSuccess && address) {
+      const trackCheckIn = async () => {
+        try {
+          const response = await fetch('/api/track-activity', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              address: address,
+              actionType: 'checkin',
+            }),
+          });
+          if (response.ok) {
+            console.log('✅ Check-in activity tracked');
+          }
+        } catch (error) {
+          console.error('Failed to track check-in:', error);
+        }
+      };
+      trackCheckIn();
+    }
+  }, [isSuccess, address]);
+
   const handleCheckIn = () => {
     if (!contractAddress || !address) {
       console.error('❌ Check-in failed: missing contract address or user address');

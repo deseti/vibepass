@@ -7,6 +7,7 @@ import { formatEther } from 'viem';
 import { useMiniAppContext } from '@/hooks/useMiniAppContext';
 import { FarcasterProfile } from '@/components/FarcasterProfile';
 import { useState, useEffect } from 'react';
+import type { LeaderboardEntry } from '@/lib/supabase';
 
 export default function StatsPage() {
   const { address, isConnected } = useAccount();
@@ -16,6 +17,9 @@ export default function StatsPage() {
   const contractAddress = CONTRACTS[8453]?.address;
   const networkName = 'Base Mainnet';
   const [shareSuccess, setShareSuccess] = useState(false);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [userRank, setUserRank] = useState<number | null>(null);
+  const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(false);
 
   const { data: nextTokenId } = useReadContract({
     address: contractAddress,
@@ -60,6 +64,38 @@ export default function StatsPage() {
   const mintActivity = userMints * 0.6;
   const checkInActivity = totalCheckIns * 0.4;
   const totalActivity = Math.floor(mintActivity + checkInActivity);
+
+  // Fetch leaderboard and user rank
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        setIsLoadingLeaderboard(true);
+        const [leaderboardRes, userRankRes] = await Promise.all([
+          fetch('/api/leaderboard?limit=10'),
+          address ? fetch(`/api/user-rank/${address}`) : Promise.resolve(null),
+        ]);
+
+        if (leaderboardRes.ok) {
+          const leaderboardData = await leaderboardRes.json();
+          setLeaderboard(leaderboardData);
+        }
+
+        if (userRankRes && userRankRes.ok) {
+          const rankData = await userRankRes.json();
+          setUserRank(rankData.rank);
+        }
+      } catch (error) {
+        console.error('Failed to fetch leaderboard:', error);
+      } finally {
+        setIsLoadingLeaderboard(false);
+      }
+    };
+
+    fetchLeaderboard();
+    // Refresh every 10 seconds
+    const interval = setInterval(fetchLeaderboard, 10000);
+    return () => clearInterval(interval);
+  }, [address]);
 
   const handleShare = () => {
     const text = `🎫 My VibeBadge Stats!\n\n📊 Total Activity: ${totalActivity}\n🎨 Badges Minted: ${userMints}\n🔥 Check-in Streak: ${checkInStreak} days\n✅ Total Check-ins: ${totalCheckIns}\n\nJoin me on VibeBadge! 🚀`;
@@ -204,23 +240,56 @@ export default function StatsPage() {
             <div className="mobile-card p-6 mb-6">
               <h3 className="text-xl font-bold mb-4 text-purple-400 flex items-center gap-2">
                 <span>🏅</span>
-                <span>Top Minters This Month</span>
+                <span>Top Minters</span>
               </h3>
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                <div className="flex items-center justify-between p-3 bg-gray-900/50 rounded-lg border border-gray-800">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span className="text-2xl">🥇</span>
-                    <div className="min-w-0">
-                      <div className="text-sm font-semibold text-gray-300 truncate">You</div>
-                      <div className="text-xs text-gray-500">{userMints} badges</div>
-                    </div>
-                  </div>
-                  <div className="text-purple-400 font-bold text-lg flex-shrink-0">#1</div>
+              {isLoadingLeaderboard ? (
+                <div className="text-center py-8 text-gray-500">Loading leaderboard...</div>
+              ) : (
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {leaderboard.length > 0 ? (
+                    leaderboard.map((entry) => {
+                      const isCurrentUser = entry.address === address?.toLowerCase();
+                      const rankEmoji =
+                        entry.rank === 1 ? '🥇' : entry.rank === 2 ? '🥈' : entry.rank === 3 ? '🥉' : '📍';
+
+                      return (
+                        <div
+                          key={entry.address}
+                          className={`flex items-center justify-between p-3 rounded-lg border transition ${
+                            isCurrentUser
+                              ? 'bg-purple-900/30 border-purple-500'
+                              : 'bg-gray-900/50 border-gray-800'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <span className="text-2xl flex-shrink-0">{rankEmoji}</span>
+                            <div className="min-w-0">
+                              <div className="text-sm font-semibold text-gray-300 truncate">
+                                {isCurrentUser ? 'You' : entry.address.slice(0, 6) + '...' + entry.address.slice(-4)}
+                              </div>
+                              <div className="text-xs text-gray-500">{entry.totalMints} badges</div>
+                            </div>
+                          </div>
+                          <div
+                            className={`font-bold text-lg flex-shrink-0 ${
+                              isCurrentUser ? 'text-purple-400' : 'text-gray-400'
+                            }`}
+                          >
+                            #{entry.rank}
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">No minters yet. Be the first!</div>
+                  )}
                 </div>
-              </div>
-              <div className="text-xs text-gray-500 text-center mt-4">
-                🎯 Mint more badges to rank higher!
-              </div>
+              )}
+              {userRank && (
+                <div className="text-xs text-gray-400 text-center mt-4">
+                  Your Rank: <span className="font-bold text-purple-400">#{userRank}</span>
+                </div>
+              )}
             </div>
 
             {/* Share Button */}
