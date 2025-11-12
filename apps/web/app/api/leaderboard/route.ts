@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createSupabaseClient } from '@/lib/supabase';
 
 export async function GET(request: NextRequest) {
   try {
+    const supabase = createSupabaseClient();
     const limit = request.nextUrl.searchParams.get('limit') || '10';
     const limitNum = Math.min(parseInt(limit), 100); // Max 100
 

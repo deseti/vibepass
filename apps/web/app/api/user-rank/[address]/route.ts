@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createSupabaseClient } from '@/lib/supabase';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { address: string } }
 ) {
   try {
+    const supabase = createSupabaseClient();
     const address = params.address.toLowerCase();
 
     // Validate address format
