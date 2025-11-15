@@ -71,10 +71,13 @@ export default function MintPage() {
 
   // Track mint activity when transaction succeeds
   useEffect(() => {
+    console.log('🔍 Track activity effect triggered:', { isSuccess, address, hash });
+    
     if (isSuccess && address) {
+      console.log('✅ Conditions met: isSuccess=true, address exists');
       const trackMint = async () => {
         try {
-          console.log('📊 Tracking mint for address:', address);
+          console.log('📊 START: Tracking mint for address:', address);
           const response = await fetch('/api/track-activity', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -84,8 +87,10 @@ export default function MintPage() {
             }),
           });
           const data = await response.json();
+          console.log('📊 API Response status:', response.status);
+          console.log('📊 API Response data:', data);
           if (response.ok) {
-            console.log('✅ Mint activity tracked:', data);
+            console.log('✅ Mint activity tracked successfully:', data);
           } else {
             console.error('❌ Track mint failed:', response.status, data);
           }
@@ -94,8 +99,10 @@ export default function MintPage() {
         }
       };
       trackMint();
+    } else {
+      console.log('⚠️ Conditions not met for tracking:', { isSuccess, hasAddress: !!address });
     }
-  }, [isSuccess, address]);
+  }, [isSuccess, address, hash]);
 
   const handleShare = () => {
     const levelEmoji = mintedLevel === 'DIAMOND' ? '💎' : mintedLevel === 'GOLD' ? '🥇' : '🥈';
