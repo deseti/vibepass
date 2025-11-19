@@ -65,33 +65,7 @@ export default function CheckInPage() {
     }
   }, [isSuccess, refetchStats, refetchCanCheckIn]);
 
-  // Track check-in activity when transaction succeeds
-  useEffect(() => {
-    if (isSuccess && address) {
-      const trackCheckIn = async () => {
-        try {
-          console.log('📊 Tracking check-in for address:', address);
-          const response = await fetch('/api/track-activity', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              address: address,
-              actionType: 'checkin',
-            }),
-          });
-          const data = await response.json();
-          if (response.ok) {
-            console.log('✅ Check-in activity tracked:', data);
-          } else {
-            console.error('❌ Track check-in failed:', response.status, data);
-          }
-        } catch (error) {
-          console.error('❌ Track check-in error:', error);
-        }
-      };
-      trackCheckIn();
-    }
-  }, [isSuccess, address]);
+  // Tracking to external leaderboard removed
 
   const handleCheckIn = () => {
     if (!contractAddress || !address) {

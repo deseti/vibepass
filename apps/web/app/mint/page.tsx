@@ -69,40 +69,7 @@ export default function MintPage() {
     }
   }, [isMiniApp, miniAppLoading, isConnected, connectors, connect]);
 
-  // Track mint activity when transaction succeeds
-  useEffect(() => {
-    console.log('🔍 Track activity effect triggered:', { isSuccess, address, hash });
-    
-    if (isSuccess && address) {
-      console.log('✅ Conditions met: isSuccess=true, address exists');
-      const trackMint = async () => {
-        try {
-          console.log('📊 START: Tracking mint for address:', address);
-          const response = await fetch('/api/track-activity', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              address: address,
-              actionType: 'mint',
-            }),
-          });
-          const data = await response.json();
-          console.log('📊 API Response status:', response.status);
-          console.log('📊 API Response data:', data);
-          if (response.ok) {
-            console.log('✅ Mint activity tracked successfully:', data);
-          } else {
-            console.error('❌ Track mint failed:', response.status, data);
-          }
-        } catch (error) {
-          console.error('❌ Track mint error:', error);
-        }
-      };
-      trackMint();
-    } else {
-      console.log('⚠️ Conditions not met for tracking:', { isSuccess, hasAddress: !!address });
-    }
-  }, [isSuccess, address, hash]);
+  // Tracking to external leaderboard removed
 
   const handleShare = () => {
     const levelEmoji = mintedLevel === 'DIAMOND' ? '💎' : mintedLevel === 'GOLD' ? '🥇' : '🥈';
