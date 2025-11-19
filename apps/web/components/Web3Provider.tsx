@@ -8,19 +8,22 @@ import { coinbaseWallet } from 'wagmi/connectors';
 import { useState, useEffect } from 'react';
 import { useMiniAppContext } from '../hooks/useMiniAppContext';
 
+// Create connectors separately to handle potential incompatibilities
+const farcasterConnector = farcasterMiniApp();
+const coinbaseConnector = coinbaseWallet({
+  appName: 'VibeBadge',
+  appLogoUrl: 'https://app.vibepas.xyz/icon.png',
+});
+
 const config = createConfig({
   chains: [base],
   connectors: [
-    farcasterMiniApp(),
-    coinbaseWallet({
-      appName: 'VibeBadge',
-      appLogoUrl: 'https://app.vibepas.xyz/icon.png',
-    }),
+    farcasterConnector,
+    coinbaseConnector,
   ],
   transports: {
     [base.id]: http('https://mainnet.base.org'),
   },
-  // Enable SSR mode dan fresh state setiap load
   ssr: false,
 });
 
@@ -32,30 +35,41 @@ function AutoConnectFarcaster() {
   const [hasAttempted, setHasAttempted] = useState(false);
 
   useEffect(() => {
-    // Berdasarkan dokumentasi: "If a user already has a connected wallet the connector will automatically connect to it"
-    // Jadi kita hanya perlu trigger connect jika belum connected
+    // Coba connect ke Farcaster jika di mini app, belum connected, dan belum pernah coba
     if (isMiniApp && !isLoading && context && !isConnected && !hasAttempted) {
-      // Cari Farcaster connector
+      // Find Farcaster connector by checking both id dan name
       const farcasterConnector = connectors.find(
-        (c) => c.id === 'farcaster' || c.name.toLowerCase().includes('farcaster')
+        (c) => 
+          c.id === 'farcaster' || 
+          c.id === 'farcasterMiniApp' ||
+          c.name?.toLowerCase?.().includes('farcaster')
       );
 
       if (farcasterConnector) {
-        // Trigger connect - akan otomatis connect ke wallet yang sudah connected
         try {
+          console.log('🔌 Attempting to connect Farcaster wallet...');
           connect({ connector: farcasterConnector });
           setHasAttempted(true);
-          console.log('✅ Farcaster wallet connected');
         } catch (error) {
-          console.error('❌ Farcaster connect failed:', error);
+          console.error('❌ Farcaster connect error:', error);
           setHasAttempted(true);
+          // Try Coinbase as fallback
+          const coinbaseConnector = connectors.find(c => c.id === 'coinbaseWallet');
+          if (coinbaseConnector) {
+            console.log('📱 Fallback: Trying Coinbase Wallet...');
+            try {
+              connect({ connector: coinbaseConnector });
+            } catch (cbError) {
+              console.error('❌ Coinbase fallback failed:', cbError);
+            }
+          }
         }
       } else {
-        console.warn('⚠️ Farcaster connector not found');
+        console.warn('⚠️ Farcaster connector not found in:', connectors.map(c => ({ id: c.id, name: c.name })));
         setHasAttempted(true);
       }
     }
-  }, [isMiniApp, isLoading, isConnected, address, hasAttempted, connect, connectors, context, connector]);
+  }, [isMiniApp, isLoading, isConnected, hasAttempted, connect, connectors, context]);
 
   return null;
 }

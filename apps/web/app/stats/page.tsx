@@ -1,10 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useReadContract, useChainId, useAccount, useConnect } from 'wagmi';
+import { useReadContract, useAccount, useConnect } from 'wagmi';
 import { CONTRACTS, VIBEBADGE_ABI, DEV_ADDRESS } from '@/lib/contracts';
 import { formatEther } from 'viem';
 import { useMiniAppContext } from '@/hooks/useMiniAppContext';
+import { useSafeChainId } from '@/hooks/useSafeChainId';
 import { FarcasterProfile } from '@/components/FarcasterProfile';
 import { useState, useEffect } from 'react';
 // Leaderboard and Supabase removed
@@ -13,7 +14,7 @@ export default function StatsPage() {
   const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
   const { isMiniApp } = useMiniAppContext();
-  const chainId = useChainId();
+  const chainId = useSafeChainId(); // Use safe wrapper that defaults to Base if Farcaster connector fails
   const contractAddress = CONTRACTS[8453]?.address;
   const networkName = 'Base Mainnet';
   const [shareSuccess, setShareSuccess] = useState(false);

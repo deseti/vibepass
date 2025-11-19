@@ -1,17 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { useAccount, useReadContract, useChainId, useConnect } from 'wagmi';
+import { useAccount, useReadContract, useConnect } from 'wagmi';
 import { CONTRACTS, VIBEBADGE_ABI } from '@/lib/contracts';
 import { formatEther } from 'viem';
 import { useMiniAppContext } from '@/hooks/useMiniAppContext';
+import { useSafeChainId } from '@/hooks/useSafeChainId';
 import { FarcasterProfile } from '@/components/FarcasterProfile';
 
 export default function HomePage() {
   const { isConnected } = useAccount();
   const { connect, connectors } = useConnect();
   const { isMiniApp } = useMiniAppContext();
-  const chainId = useChainId();
+  const chainId = useSafeChainId(); // Use safe wrapper that defaults to Base if Farcaster connector fails
   const contractAddress = CONTRACTS[chainId as keyof typeof CONTRACTS]?.address;
 
   const { data: nextTokenId } = useReadContract({

@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useAccount, useConnect, useReadContract, useWriteContract, useWaitForTransactionReceipt, useChainId, useSwitchChain } from 'wagmi';
+import { useAccount, useConnect, useReadContract, useWriteContract, useWaitForTransactionReceipt, useSwitchChain } from 'wagmi';
 import { CONTRACTS, VIBEBADGE_ABI, DEV_ADDRESS } from '@/lib/contracts';
 import { formatEther } from 'viem';
 import { generateBadgeSVG, generateBadgeMetadata, type BadgeLevel } from '@/lib/badgeGenerator';
 import { uploadSVGToPinata, uploadToPinata, ipfsToHttps } from '@/lib/pinata';
 import { useMiniAppContext } from '@/hooks/useMiniAppContext';
+import { useSafeChainId } from '@/hooks/useSafeChainId';
 import { FarcasterProfile } from '@/components/FarcasterProfile';
 
 export default function MintPage() {
@@ -25,7 +26,7 @@ export default function MintPage() {
   const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
   const { isMiniApp, isLoading: miniAppLoading, context } = useMiniAppContext();
-  const chainId = useChainId();
+  const chainId = useSafeChainId(); // Use safe wrapper that defaults to Base if Farcaster connector fails
   const { chains, switchChain } = useSwitchChain();
   
   const contractAddress = CONTRACTS[8453]?.address;

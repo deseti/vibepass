@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useAccount, useReadContract, useChainId, useConnect } from 'wagmi';
+import { useAccount, useReadContract, useConnect } from 'wagmi';
 import { CONTRACTS, VIBEBADGE_ABI } from '@/lib/contracts';
 import { useMiniAppContext } from '@/hooks/useMiniAppContext';
+import { useSafeChainId } from '@/hooks/useSafeChainId';
 
 export default function BadgesPage() {
   const [tokenURIs, setTokenURIs] = useState<string[]>([]);
@@ -13,7 +14,7 @@ export default function BadgesPage() {
   const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
   const { isMiniApp } = useMiniAppContext();
-  const chainId = useChainId();
+  const chainId = useSafeChainId(); // Use safe wrapper that defaults to Base if Farcaster connector fails
   const contractAddress = CONTRACTS[8453]?.address;
   const explorerUrl = CONTRACTS[8453]?.explorer;
 
