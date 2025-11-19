@@ -1,27 +1,32 @@
 'use client';
 
-import { useChainId, useAccount } from 'wagmi';
+import { useAccount } from 'wagmi';
 import { base } from 'wagmi/chains';
 
 /**
- * Safe wrapper around useChainId that handles Farcaster connector compatibility
- * Falls back to Base (8453) if chainId is undefined or connector doesn't support getChainId
+ * Safe chainId getter that works with Farcaster Mini App connector
+ * 
+ * Problem: Farcaster connector's getChainId() is not a function or throws errors
+ * Solution: Get chainId directly from account.chain, default to Base (8453)
+ * 
+ * This avoids calling connector.getChainId() which is buggy in Farcaster connector
  */
 export function useSafeChainId(): number {
-  const { connector } = useAccount();
-  const chainId = useChainId();
+  const { chain, connector } = useAccount();
   
-  // If chainId is undefined or 0, default to Base Mainnet
-  if (!chainId || chainId === 0) {
-    console.warn('⚠️ ChainId undefined, defaulting to Base Mainnet (8453)');
-    return base.id; // 8453
+  // Priority 1: Get from connected chain (most reliable)
+  if (chain?.id) {
+    return chain.id;
   }
   
-  // Check if connector properly supports getChainId
-  if (connector && typeof connector.getChainId !== 'function') {
-    console.warn('⚠️ Connector does not implement getChainId, using default Base (8453)');
-    return base.id; // 8453
+  // Priority 2: Check if connector name suggests Farcaster
+  if (connector?.name?.toLowerCase().includes('farcaster')) {
+    // Farcaster Mini App always runs on Base
+    console.log('🔵 Farcaster connector detected, using Base (8453)');
+    return base.id;
   }
   
-  return chainId;
+  // Priority 3: Default to Base Mainnet for safety
+  console.warn('⚠️ No chain detected, defaulting to Base (8453)');
+  return base.id;
 }
