@@ -8,8 +8,13 @@ import { coinbaseWallet } from 'wagmi/connectors';
 import { useState, useEffect } from 'react';
 import { useMiniAppContext } from '../hooks/useMiniAppContext';
 
+// Get WalletConnect Project ID from environment
+const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '3915c114eef8cb154d04b41fccf18cf3';
+
 // Create connectors separately to handle potential incompatibilities
+// Note: farcasterMiniApp() doesn't accept config parameters - it auto-configures for Farcaster
 const farcasterConnector = farcasterMiniApp();
+
 const coinbaseConnector = coinbaseWallet({
   appName: 'VibeBadge',
   appLogoUrl: 'https://app.vibepas.xyz/icon.png',
